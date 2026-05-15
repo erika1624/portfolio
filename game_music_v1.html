@@ -1038,7 +1038,7 @@ body.luna-select .diff-btn.diff-hard.active{
 <div class="liz-area">
   <div class="liz-reflect"></div>
   <div class="liz-shadow"></div>
-  <img class="liz-img" src="リズ_音楽_選択中_.png" alt="LIZ">
+  <img class="liz-img" src="リズメイン.png" alt="LIZ">
 </div>
 
 <!-- NOA ガイド — 左側 -->
@@ -1140,21 +1140,21 @@ const ALL_SONGS = [
   {
     title:'ネオンビート', en:'NEON BEAT', genre:'POP', bpm:140, dur:'3:42',
     levels:[7,13,18], scores:['987,450','812,300','654,100'], ranks:['S','A','B'],
-    jacket:'ネオンビート　ジャケ写.png', badge:true,
+    jacket:'ネオンビート_ジャケ写.png', badge:true,
     themeA:[255,60,180], themeB:[0,220,200],
     type:'riz', char:'riz'
   },
   {
     title:'星空のメロディ', en:'STARLIGHT MELODY', genre:'BALLAD', bpm:88, dur:'4:15',
     levels:[5,10,15], scores:['—','772,890','534,220'], ranks:['—','A','C'],
-    jacket:'星空のメロディ　ジャケ写.png', badge:false,
+    jacket:'星空のメロディ_ジャケ写.png', badge:false,
     themeA:[70,130,255], themeB:[180,210,255],
     type:'duo', char:'riz'
   },
   {
     title:'サイバー・パルス', en:'CYBER PULSE', genre:'TECHNO', bpm:175, dur:'3:28',
     levels:[9,16,22], scores:['—','—','421,680'], ranks:['—','—','D'],
-    jacket:'サイバー・パルス　ジャケ写.png', badge:true,
+    jacket:'サイバー・パルス_ジャケ写.png', badge:true,
     themeA:[0,230,80], themeB:[255,200,60],
     type:'luna', char:'riz'
   },
@@ -1162,21 +1162,21 @@ const ALL_SONGS = [
   {
     title:'CYBER KISS CRASH', en:'CYBER KISS CRASH', genre:'DARK POP', bpm:128, dur:'3:55',
     levels:[6,12,20], scores:['—','—','—'], ranks:['—','—','—'],
-    jacket:'CYBER KISS CRASH　ジャケ写.png', badge:true,
+    jacket:'CYBER_KISS_CRASH_ジャケ写.png', badge:true,
     themeA:[180,0,255], themeB:[255,0,120],
     type:'luna', char:'luna'
   },
   {
     title:'Midnight Glitch Love', en:'MIDNIGHT GLITCH LOVE', genre:'GLITCH', bpm:115, dur:'4:08',
     levels:[5,11,18], scores:['—','—','—'], ranks:['—','—','—'],
-    jacket:'Midnight Glitch Love　ジャケ写.png', badge:false,
+    jacket:'Midnight_Glitch_Love_ジャケ写.png', badge:false,
     themeA:[100,0,220], themeB:[0,180,255],
     type:'luna', char:'luna'
   },
   {
     title:'Lipstick Logic', en:'LIPSTICK LOGIC', genre:'ELECTRO', bpm:145, dur:'3:30',
     levels:[8,15,22], scores:['—','—','—'], ranks:['—','—','—'],
-    jacket:'Lipstick Logic　ジャケ写.png', badge:true,
+    jacket:'Lipstick_Logic_ジャケ写.png', badge:true,
     themeA:[255,0,80], themeB:[180,0,255],
     type:'luna', char:'luna'
   }
@@ -1403,7 +1403,7 @@ function switchChar(ch){
   /* 背景動画を切り替え */
   const vid=document.getElementById('bgVideo');
   if(vid){
-    vid.src=ch===1?'ルナ_演奏_背景.mp4':'スマホ　ゲーム　背景.mp4';
+    vid.src=ch===1?'ルナ_演奏_背景.mp4':'スマホ_ゲーム_背景.mp4';
     vid.load();
     vid.play().catch(()=>{});
   }

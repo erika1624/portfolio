@@ -611,9 +611,9 @@ body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;positi
   <canvas class="bgcv" id="menu-cv"></canvas>
   <!-- 斜め大判カード -->
   <div id="menu-img-area">
-    <img class="hcard hc1" src="テクノ系_ジャケ写_サイバー・パルス.png" alt="">
-    <img class="hcard hc2" src="バラード_ジャケ写_星空のメロディ.png" alt="">
-    <img class="hcard hc3" src="メインジャケ写_ネオンビート.png" alt="">
+    <img class="hcard hc1" src="サイバー・パルス_ジャケ写.png" alt="">
+    <img class="hcard hc2" src="星空のメロディ_ジャケ写.png" alt="">
+    <img class="hcard hc3" src="ネオンビート_ジャケ写.png" alt="">
   </div>
   <!-- タイトル上部 -->
   <div id="menu-top">
@@ -689,7 +689,7 @@ body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;positi
   <div id="ssr-flash"></div>
   <div id="ssr-body">
     <div id="ssr-label">SSR</div>
-    <img id="ssr-img" src="リズ_ダイヤモンド.png" alt="SSR リズ">
+    <img id="ssr-img" src="リズ_スペシャル.png" alt="SSR リズ">
     <div id="ssr-info">
       <div id="ssr-char">リ　ズ</div>
       <div id="ssr-title">[ ダイヤモンドの歌姫 ]</div>
@@ -719,22 +719,22 @@ const SR_CARDS=[
   {rarity:'SR',img:'ルナ_嬉しい.png',name:'ルナ'},
   {rarity:'SR',img:'ルナ_歌う.png',name:'ルナ'},
   {rarity:'SR',img:'ルナ_メイン.png',name:'ルナ'},
-  {rarity:'SR',img:'ルナ　ポーズ.png',name:'ルナ'},
-  {rarity:'SR',img:'リズ　笑顔.png',name:'リズ'},
-  {rarity:'SR',img:'リズ　頑張ったね.png',name:'リズ'},
-  {rarity:'SR',img:'リズ　おつかれ.png',name:'リズ'},
-  {rarity:'SR',img:'リズ　LIVE.png',name:'リズ'},
+  {rarity:'SR',img:'ルナ_ポーズ.png',name:'ルナ'},
+  {rarity:'SR',img:'リズ_笑顔.png',name:'リズ'},
+  {rarity:'SR',img:'リズ_頑張ったね.png',name:'リズ'},
+  {rarity:'SR',img:'リズ_おつかれ.png',name:'リズ'},
+  {rarity:'SR',img:'リズ_LIVE.png',name:'リズ'},
 ];
 const SSR_CARDS=[
-  {rarity:'SSR',img:'リズ　スペシャル.png',name:'リズ [スペシャル]'},
-  {rarity:'SSR',img:'リズ　ルナ_メイン.png',name:'リズ & ルナ'},
-  {rarity:'SSR',img:'リズ　ルナ　バトル.png',name:'リズ & ルナ [バトル]'},
-  {rarity:'SSR',img:'星空のメロディ　ジャケ写.png',name:'星空のメロディ'},
-  {rarity:'SSR',img:'ネオンビート　ジャケ写.png',name:'ネオンビート'},
-  {rarity:'SSR',img:'サイバー・パルス　ジャケ写.png',name:'サイバー・パルス'},
-  {rarity:'SSR',img:'CYBER KISS CRASH　ジャケ写.png',name:'CYBER KISS CRASH'},
-  {rarity:'SSR',img:'Midnight Glitch Love　ジャケ写.png',name:'Midnight Glitch Love'},
-  {rarity:'SSR',img:'Lipstick Logic　ジャケ写.png',name:'Lipstick Logic'},
+  {rarity:'SSR',img:'リズ_スペシャル.png',name:'リズ [スペシャル]'},
+  {rarity:'SSR',img:'リズ_ルナ_メイン.png',name:'リズ & ルナ'},
+  {rarity:'SSR',img:'リズ_ルナ_バトル.png',name:'リズ & ルナ [バトル]'},
+  {rarity:'SSR',img:'星空のメロディ_ジャケ写.png',name:'星空のメロディ'},
+  {rarity:'SSR',img:'ネオンビート_ジャケ写.png',name:'ネオンビート'},
+  {rarity:'SSR',img:'サイバー・パルス_ジャケ写.png',name:'サイバー・パルス'},
+  {rarity:'SSR',img:'CYBER_KISS_CRASH_ジャケ写.png',name:'CYBER KISS CRASH'},
+  {rarity:'SSR',img:'Midnight_Glitch_Love_ジャケ写.png',name:'Midnight Glitch Love'},
+  {rarity:'SSR',img:'Lipstick_Logic_ジャケ写.png',name:'Lipstick Logic'},
 ];
 function randFrom(a){return a[Math.floor(Math.random()*a.length)];}
 function roll1(){
@@ -775,7 +775,7 @@ function goScreen(n){
 window.goMenu=function(){stopSSR();goScreen('menu');};
 
 /* BG */
-const _bgImg=(()=>{const img=new Image();img.src='横型　スマホゲーム　背景.png';return img;})();
+const _bgImg=(()=>{const img=new Image();img.src='横型_スマホゲーム_背景.png';return img;})();
 function drawDiamondBG(c,cW,cH,t){
   if(_bgImg.complete&&_bgImg.naturalWidth>0){const iw=_bgImg.naturalWidth,ih=_bgImg.naturalHeight,sc=Math.max(cW/iw,cH/ih),sw=iw*sc,sh=ih*sc;c.drawImage(_bgImg,(cW-sw)/2,(cH-sh)/2,sw,sh);}else{c.fillStyle='#e8f0ff';c.fillRect(0,0,cW,cH);}
 }
@@ -783,8 +783,8 @@ function drawDiamondBG(c,cW,cH,t){
 /* ── メニュー背景カード散りばめ ── */
 const _ALL_IMGS=[
   'ノア_危険.png','ノア_嬉しい.png','ノア_怯えてる.png','ノア_普通.png','ノア_案内.png','ノア_誘導.png',
-  'ルナ_嬉しい.png','ルナ_歌う.png','ルナ_メイン.png','ルナ　ポーズ.png',
-  'リズ　笑顔.png','リズ　頑張ったね.png','リズ　おつかれ.png','リズ　LIVE.png'
+  'ルナ_嬉しい.png','ルナ_歌う.png','ルナ_メイン.png','ルナ_ポーズ.png',
+  'リズ_笑顔.png','リズ_頑張ったね.png','リズ_おつかれ.png','リズ_LIVE.png'
   // SSR画像は除外
 ];
 const _imgCache={};
