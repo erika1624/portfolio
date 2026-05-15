@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cyber Pop BG</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#fff;}
+canvas{display:block;width:100%;height:100%;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<script>
+/* ════════════════════════════════════════════════════════
+   CYBER POP BACKGROUND — サイバーポップ背景
+   白ベース × パステルひし形 × ネオン輝き × ホログラム
+════════════════════════════════════════════════════════ */
+const cv = document.getElementById('bg');
+const ctx = cv.getContext('2d');
+const W = 1280, H = 864;
+cv.width = W; cv.height = H;
+
+/* ── パレット ── */
+const PAL = {
+  pink:   [255, 180, 215],
+  blue:   [165, 215, 255],
+  yellow: [255, 238, 140],
+  lav:    [215, 190, 255],
+  mint:   [175, 245, 230],
+  white:  [255, 255, 255],
+};
+const PCOLS = [PAL.pink, PAL.blue, PAL.yellow, PAL.lav, PAL.mint];
+
+/* ── 静的グリッドシード ── */
+const GR = 15, GC = 20;
+const GRID = (() => {
+  const g = [];
+  for (let r = 0; r < GR; r++) {
+    g[r] = [];
+    for (let c = 0; c < GC; c++) {
+      const s = (r * 41 + c * 29 + r * c * 11 + 13) % 36;
+      if (s < 5)       g[r][c] = -1;   // 空（輪郭のみ）
+      else if (s < 12) g[r][c] = 0;    // pink
+      else if (s < 20) g[r][c] = 1;    // blue
+      else if (s < 24) g[r][c] = 2;    // yellow
+      else if (s < 30) g[r][c] = 3;    // lavender
+      else             g[r][c] = 4;    // mint
+    }
+  }
+  return g;
+})();
+
+/* ── スパークルシード ── */
+const SPARKS = (() => {
+  const rng = (min, max) => min + Math.random() * (max - min);
+  return Array.from({length: 42}, () => ({
+    x: rng(0, W), y: rng(0, H),
+    sz: rng(3, 14), ph: rng(0, Math.PI * 2),
+    sp: rng(0.006, 0.022),
+    col: PCOLS[Math.floor(Math.random() * 3)], // pink/blue/yellow
+  }));
+})();
+
+/* ── イエローパーティクル ── */
+const YPARTS = Array.from({length: 28}, () => ({
+  ox: 0.04 + Math.random() * 0.92,
+  oy: Math.random(),
+  sp: 0.08 + Math.random() * 0.38,
+  ph: Math.random() * Math.PI * 2,
+  r:  0.9 + Math.random() * 2.4,
+  sq: Math.random() < 0.5,
+}));
+
+/* ── レインボーストライプ色 ── */
+const RAINBOW = [
+  [255, 100, 185],  // vivid pink
+  [230, 100, 255],  // violet
+  [140, 110, 255],  // indigo
+  [100, 180, 255],  // sky blue
+  [100, 245, 215],  // cyan-mint
+  [155, 255, 130],  // lime
+  [255, 245, 100],  // yellow
+  [255, 175,  80],  // orange
+];
+
+let frame = 0;
+
+/* ════ 1. ベースレイヤー ════ */
+function drawBase() {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // 対角グラデーション（左上ピンク→右下ブルー）
+  const dg = ctx.createLinearGradient(0, 0, W, H);
+  dg.addColorStop(0,   'rgba(255,228,242,0.22)');
+  dg.addColorStop(0.45,'rgba(255,255,255,0.00)');
+  dg.addColorStop(1,   'rgba(215,238,255,0.22)');
+  ctx.fillStyle = dg; ctx.fillRect(0, 0, W, H);
+
+  // ティール系ゾーン（右側）
+  const tg = ctx.createRadialGradient(W * 0.82, H * 0.42, 0, W * 0.82, H * 0.42, W * 0.55);
+  tg.addColorStop(0,   'rgba(165,240,228,0.35)');
+  tg.addColorStop(0.45,'rgba(185,242,232,0.18)');
+  tg.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, H);
+
+  // 左上ソフトピンクハロー
+  const pg = ctx.createRadialGradient(W * 0.08, H * 0.08, 0, W * 0.08, H * 0.08, W * 0.38);
+  pg.addColorStop(0,   'rgba(255,200,230,0.22)');
+  pg.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = pg; ctx.fillRect(0, 0, W, H);
+}
+
+/* ════ 2. ドット格子（ティールゾーン）════ */
+function drawDotPattern() {
+  ctx.save();
+  const spacing = 24, dotR = 3.2;
+  for (let x = W * 0.38; x < W + spacing; x += spacing) {
+    for (let y = 0; y < H + spacing; y += spacing) {
+      const offset = (Math.floor(y / spacing) % 2 === 0) ? 0 : spacing / 2;
+      const rx = x + offset;
+      if (rx > W + 2) continue;
+      const dx = rx / W - 0.82, dy = y / H - 0.42;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const a = Math.max(0, 0.22 - dist * 0.48);
+      if (a < 0.01) continue;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(80,205,188,1)';
+      ctx.beginPath();
+      ctx.arc(rx, y, dotR * (1 - dist * 0.4), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+/* ════ 3. 放射ネオンライン ════ */
+function drawNeonLines(t) {
+  const VX = W * 0.50, VY = H * 0.15;
+  const lineDefs = [
+    {col:[255,140,200], a:0.09}, {col:[255,140,200], a:0.07},
+    {col:[140,195,255], a:0.08}, {col:[140,195,255], a:0.06},
+    {col:[255,235,120], a:0.07}, {col:[200,170,255], a:0.06},
+    {col:[100,235,215], a:0.06}, {col:[255,140,200], a:0.05},
+    {col:[140,195,255], a:0.07}, {col:[255,235,120], a:0.06},
+    {col:[200,170,255], a:0.05}, {col:[100,235,215], a:0.07},
+  ];
+  lineDefs.forEach((l, i) => {
+    const angle = ((i / lineDefs.length) * Math.PI * 0.90) - Math.PI * 0.45;
+    const x2 = VX + Math.cos(angle) * W * 1.2;
+    const y2 = VY + Math.sin(angle) * H * 1.1;
+    const pulse = l.a * (0.75 + 0.25 * Math.sin(t * 0.8 + i * 0.52));
+    const gr = ctx.createLinearGradient(VX, VY, x2, y2);
+    const [R, G, B] = l.col;
+    gr.addColorStop(0,    `rgba(${R},${G},${B},0)`);
+    gr.addColorStop(0.18, `rgba(${R},${G},${B},${pulse})`);
+    gr.addColorStop(0.65, `rgba(${R},${G},${B},${pulse * 0.4})`);
+    gr.addColorStop(1,    `rgba(${R},${G},${B},0)`);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(VX, VY); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = gr;
+    ctx.lineWidth = 1.2;
+    ctx.shadowBlur = 6; ctx.shadowColor = `rgba(${R},${G},${B},0.5)`;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  });
+}
+
+/* ════ 4. パースペクティブひし形グリッド ════ */
+function drawDiamonds(t) {
+  const VX = W * 0.50, VY = H * 0.16;
+
+  for (let r = 0; r < GR; r++) {
+    const t0 = r / GR, t1 = (r + 1) / GR;
+    const yFar  = VY + (H - VY) * Math.pow(t0, 0.58);
+    const yNear = VY + (H - VY) * Math.pow(t1, 0.58);
+    const rowH = yNear - yFar;
+    const cy = (yFar + yNear) / 2;
+
+    const nearness = Math.pow(t1, 0.82);
+    const rowW = W * 1.48 * nearness;
+    const xOff = (W - rowW) / 2;
+    const cellW = rowW / GC;
+    const dw = cellW * 0.27;   // 横幅（細め）
+    const dh = rowH * 0.92;    // 縦幅（長め→「針」形）
+    const alpha = Math.pow(nearness, 1.18) * 0.88;
+    if (alpha < 0.018) continue;
+
+    for (let c = 0; c < GC; c++) {
+      const cIdx = GRID[r][c];
+      const cx = xOff + cellW * (c + 0.5);
+      const yo = (c % 2 === 0) ? 0 : rowH * 0.44; // ブリック配置
+      const acy = cy + yo;
+
+      ctx.save();
+
+      if (cIdx === -1) {
+        /* 空マス：ホワイトアウトライン（ホログラム感） */
+        if (nearness > 0.35) {
+          ctx.globalAlpha = alpha * 0.28;
+          ctx.strokeStyle = 'rgba(200,215,255,1)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(cx, acy - dh/2); ctx.lineTo(cx + dw/2, acy);
+          ctx.lineTo(cx, acy + dh/2); ctx.lineTo(cx - dw/2, acy);
+          ctx.closePath(); ctx.stroke();
+        }
+        ctx.restore(); continue;
+      }
+
+      const [R, G, B] = PCOLS[cIdx];
+
+      /* ネオングロー（近景ほど強く） */
+      if (nearness > 0.55) {
+        ctx.shadowBlur = 14 * nearness;
+        ctx.shadowColor = `rgba(${R},${G},${B},0.75)`;
+      }
+      ctx.globalAlpha = alpha;
+
+      /* グラデーション塗り（ホログラム質感） */
+      const gf = ctx.createLinearGradient(cx - dw/2, acy - dh/2, cx + dw/2, acy + dh/2);
+      gf.addColorStop(0,    `rgba(255,255,255,0.80)`);
+      gf.addColorStop(0.28, `rgba(${R},${G},${B},0.85)`);
+      gf.addColorStop(0.55, `rgba(${Math.min(R+35,255)},${Math.min(G+25,255)},${Math.min(B+35,255)},0.75)`);
+      gf.addColorStop(0.80, `rgba(${R},${G},${B},0.70)`);
+      gf.addColorStop(1,    `rgba(255,255,255,0.55)`);
+
+      ctx.beginPath();
+      ctx.moveTo(cx, acy - dh/2); ctx.lineTo(cx + dw/2, acy);
+      ctx.lineTo(cx, acy + dh/2); ctx.lineTo(cx - dw/2, acy);
+      ctx.closePath();
+      ctx.fillStyle = gf; ctx.fill();
+
+      /* ハイライトアウトライン */
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = alpha * 0.65;
+      ctx.strokeStyle = 'rgba(255,255,255,0.90)';
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+
+      /* 色収差（近景） */
+      if (r > GR * 0.68) {
+        const ca = alpha * 0.22;
+        ctx.lineWidth = 1.1;
+        ctx.globalAlpha = ca;
+        ctx.strokeStyle = 'rgba(255,100,210,1)';
+        ctx.beginPath();
+        ctx.moveTo(cx-1,acy-dh/2-1); ctx.lineTo(cx+dw/2+1,acy);
+        ctx.lineTo(cx-1,acy+dh/2+1); ctx.lineTo(cx-dw/2-1,acy);
+        ctx.closePath(); ctx.stroke();
+        ctx.strokeStyle = 'rgba(100,195,255,1)';
+        ctx.beginPath();
+        ctx.moveTo(cx+1,acy-dh/2+1); ctx.lineTo(cx+dw/2,acy+1);
+        ctx.lineTo(cx+1,acy+dh/2-1); ctx.lineTo(cx-dw/2,acy+1);
+        ctx.closePath(); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+}
+
+/* ════ 5. ホライズンフェード（奥→白） ════ */
+function drawHorizonFade() {
+  const hf = ctx.createLinearGradient(0, 0, 0, H * 0.50);
+  hf.addColorStop(0,   'rgba(255,255,255,0.96)');
+  hf.addColorStop(0.55,'rgba(255,255,255,0.40)');
+  hf.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = hf; ctx.fillRect(0, 0, W, H * 0.50);
+}
+
+/* ════ 6. レインボーコーナーアクセント ════ */
+function drawCornerAccents(t) {
+  const sw = 15; // ストライプ幅
+
+  /* 右上コーナー */
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(W - 320, 0); ctx.lineTo(W, 0); ctx.lineTo(W, 320);
+  ctx.closePath(); ctx.clip();
+  ctx.translate(W, 0); ctx.rotate(Math.PI / 4);
+  for (let i = -4; i < 32; i++) {
+    const col = RAINBOW[((i % RAINBOW.length) + RAINBOW.length) % RAINBOW.length];
+    const y = i * sw * 1.85;
+    const pulse = 0.62 + 0.10 * Math.sin(t * 0.5 + i * 0.38);
+    ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${pulse})`;
+    ctx.fillRect(-520, y, 620, sw);
+  }
+  /* エッジホワイトグロー */
+  const eg = ctx.createRadialGradient(0, 0, 0, 0, 0, 380);
+  eg.addColorStop(0,   'rgba(255,255,255,0.50)');
+  eg.addColorStop(0.35,'rgba(255,255,255,0.18)');
+  eg.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = eg; ctx.fillRect(-520, -520, 1040, 1040);
+  ctx.restore();
+
+  /* 右下コーナー */
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(W, H - 240); ctx.lineTo(W, H); ctx.lineTo(W - 240, H);
+  ctx.closePath(); ctx.clip();
+  ctx.translate(W, H); ctx.rotate(-Math.PI / 4);
+  for (let i = -4; i < 24; i++) {
+    const col = RAINBOW[((i % RAINBOW.length) + RAINBOW.length) % RAINBOW.length];
+    const y = i * sw * 1.85;
+    const pulse = 0.55 + 0.10 * Math.sin(t * 0.5 + i * 0.38 + 1.2);
+    ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${pulse})`;
+    ctx.fillRect(-380, y, 440, sw);
+  }
+  const eg2 = ctx.createRadialGradient(0, 0, 0, 0, 0, 280);
+  eg2.addColorStop(0,   'rgba(255,255,255,0.45)');
+  eg2.addColorStop(0.35,'rgba(255,255,255,0.15)');
+  eg2.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = eg2; ctx.fillRect(-380, -380, 760, 760);
+  ctx.restore();
+
+  /* 左上コーナー（小） */
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(0, 0); ctx.lineTo(160, 0); ctx.lineTo(0, 160);
+  ctx.closePath(); ctx.clip();
+  ctx.translate(0, 0); ctx.rotate(Math.PI / 4);
+  for (let i = -4; i < 16; i++) {
+    const col = RAINBOW[((i + 3) % RAINBOW.length + RAINBOW.length) % RAINBOW.length];
+    const y = i * sw * 1.85;
+    const pulse = 0.40 + 0.08 * Math.sin(t * 0.5 + i * 0.38 + 2.5);
+    ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${pulse})`;
+    ctx.fillRect(-280, y, 340, sw);
+  }
+  ctx.restore();
+}
+
+/* ════ 7. スパークル（4方向クロス星） ════ */
+function drawSparkles(t) {
+  SPARKS.forEach(sp => {
+    sp.ph += sp.sp;
+    const a = 0.35 + 0.65 * Math.abs(Math.sin(sp.ph));
+    const sz = sp.sz * (0.65 + 0.35 * Math.abs(Math.sin(sp.ph)));
+    const [R, G, B] = sp.col;
+
+    ctx.save();
+    ctx.globalAlpha = a * 0.90;
+    ctx.translate(sp.x, sp.y);
+
+    /* ブルームグロー */
+    ctx.shadowBlur = sz * 3.5;
+    ctx.shadowColor = `rgba(${R},${G},${B},0.85)`;
+
+    ctx.strokeStyle = `rgba(${R},${G},${B},1)`;
+    ctx.lineWidth = 1.2;
+
+    /* メインクロス（縦横） */
+    ctx.beginPath();
+    ctx.moveTo(0, -sz); ctx.lineTo(0, sz);
+    ctx.moveTo(-sz, 0); ctx.lineTo(sz, 0);
+    ctx.stroke();
+
+    /* 45°斜め（短め） */
+    ctx.shadowBlur = sz * 2;
+    ctx.globalAlpha = a * 0.55;
+    const ds = sz * 0.58;
+    ctx.beginPath();
+    ctx.moveTo(-ds, -ds); ctx.lineTo(ds, ds);
+    ctx.moveTo(ds, -ds);  ctx.lineTo(-ds, ds);
+    ctx.stroke();
+
+    /* 中心ドット */
+    ctx.shadowBlur = sz * 2.5;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = 'rgba(255,255,255,1)';
+    ctx.beginPath();
+    ctx.arc(0, 0, sz * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  });
+}
+
+/* ════ 8. イエロー浮遊パーティクル ════ */
+function drawYellowParticles(t) {
+  YPARTS.forEach(p => {
+    const yy = ((p.oy * H - t * p.sp * 58) % H + H) % H;
+    const a = (0.38 + 0.32 * Math.sin(t * 1.6 + p.ph)) * (yy / H);
+    if (a < 0.04) return;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(255,215,0,0.90)';
+    ctx.fillStyle = 'rgba(255,228,60,1)';
+    if (p.sq) {
+      ctx.translate(p.ox * W, yy);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 2);
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.ox * W, yy, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+/* ════ 9. ホログラム虹色シマー ════ */
+function drawShimmer(t) {
+  const hue = (t * 18) % 360;
+  const sh = ctx.createLinearGradient(0, 0, W, H);
+  sh.addColorStop(0,    `hsla(${hue},     85%, 78%, 0.042)`);
+  sh.addColorStop(0.30, `hsla(${hue+110}, 85%, 78%, 0.028)`);
+  sh.addColorStop(0.60, `hsla(${hue+220}, 85%, 78%, 0.036)`);
+  sh.addColorStop(1,    `hsla(${hue+330}, 85%, 78%, 0.028)`);
+  ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
+}
+
+/* ════ 10. 大型アウトラインひし形（背景装飾）════ */
+function drawBigDiamonds(t) {
+  const defs = [
+    {cx:W*0.88, cy:H*0.24, w:62,  h:148, col:[175,215,255], a:0.22, rot:0.08},
+    {cx:W*0.10, cy:H*0.72, w:50,  h:118, col:[255,185,215], a:0.18, rot:-0.06},
+    {cx:W*0.78, cy:H*0.80, w:42,  h: 98, col:[255,238,140], a:0.20, rot:0.12},
+    {cx:W*0.92, cy:H*0.58, w:34,  h: 82, col:[210,190,255], a:0.16, rot:0.04},
+    {cx:W*0.06, cy:H*0.38, w:30,  h: 72, col:[175,245,230], a:0.16, rot:-0.10},
+    {cx:W*0.55, cy:H*0.08, w:28,  h: 64, col:[255,185,215], a:0.14, rot: 0.05},
+    {cx:W*0.36, cy:H*0.88, w:24,  h: 56, col:[165,215,255], a:0.14, rot:-0.04},
+  ];
+  defs.forEach((d, i) => {
+    const [R, G, B] = d.col;
+    const pulse = 0.75 + 0.25 * Math.sin(t * 0.55 + i * 1.05);
+    ctx.save();
+    ctx.translate(d.cx, d.cy);
+    ctx.rotate(d.rot + Math.sin(t * 0.20 + i) * 0.018);
+    ctx.globalAlpha = d.a * pulse;
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = `rgba(${R},${G},${B},0.60)`;
+    ctx.strokeStyle = `rgba(${R},${G},${B},1)`;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(0, -d.h/2); ctx.lineTo(d.w/2, 0);
+    ctx.lineTo(0,  d.h/2); ctx.lineTo(-d.w/2, 0);
+    ctx.closePath(); ctx.stroke();
+    /* 内側グロー */
+    ctx.globalAlpha = d.a * pulse * 0.30;
+    ctx.fillStyle = `rgba(${R},${G},${B},1)`;
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+/* ════ 11. ライトフレームグロー（エッジ発光）════ */
+function drawFrameGlow(t) {
+  const pulse = 0.85 + 0.15 * Math.sin(t * 0.45);
+  /* 右エッジ：ティール〜ピンク */
+  const re = ctx.createLinearGradient(W - 80, 0, W, 0);
+  re.addColorStop(0, 'rgba(255,255,255,0)');
+  re.addColorStop(1, `rgba(165,240,228,${0.25 * pulse})`);
+  ctx.fillStyle = re; ctx.fillRect(W - 80, 0, 80, H);
+
+  /* 下エッジ：ピンク */
+  const be = ctx.createLinearGradient(0, H - 60, 0, H);
+  be.addColorStop(0, 'rgba(255,255,255,0)');
+  be.addColorStop(1, `rgba(255,200,228,${0.18 * pulse})`);
+  ctx.fillStyle = be; ctx.fillRect(0, H - 60, W, 60);
+}
+
+/* ════ メインループ ════ */
+function render(ts) {
+  const t = ts * 0.001;
+  frame++;
+
+  ctx.clearRect(0, 0, W, H);
+
+  drawBase();
+  drawDotPattern();
+  drawNeonLines(t);
+  drawDiamonds(t);
+  drawBigDiamonds(t);
+  drawHorizonFade();
+  drawYellowParticles(t);
+  drawCornerAccents(t);
+  drawSparkles(t);
+  drawShimmer(t);
+  drawFrameGlow(t);
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

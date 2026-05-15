@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>NEON BEAT - GACHA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@700&family=Russo+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{width:100vw;height:100vh;display:flex;align-items:flex-start;justify-content:center;background:#000;overflow:hidden;}
+body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;position:relative;background:linear-gradient(135deg,#fce8f8 0%,#e8f4ff 45%,#f8fff0 75%,#fff6e8 100%);}
+#app{position:relative;width:100%;height:100%;overflow:hidden;}
+/* ── デコ丸 ── */
+.deco{display:none!important;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.screen.active{opacity:1;pointer-events:all;}
+#s-single{display:flex;flex-direction:row;align-items:stretch;}
+.bgcv{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+
+/* ══════════════════════════════════════
+   共通ボタン — ホームメニュースタイル統一
+══════════════════════════════════════ */
+.neon-btn{
+  border:none;cursor:pointer;font-family:'Orbitron',sans-serif;font-weight:700;
+  letter-spacing:.08em;display:flex;align-items:center;justify-content:center;
+  text-decoration:none;transition:transform .14s,box-shadow .14s;
+  -webkit-tap-highlight-color:transparent;border-radius:12px;
+  position:relative;overflow:hidden;
+}
+.neon-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 60%);pointer-events:none;}
+.neon-btn:active{transform:scale(.93)!important;}
+
+/* ── もう一度引く／アクション：紫ガラス（STORY風） ── */
+.nbtn-purple{
+  background:linear-gradient(135deg,rgba(180,80,255,.28),rgba(110,40,200,.22));
+  color:#cc88ff;font-size:13px;
+  border:1.5px solid rgba(180,100,255,.55);
+  box-shadow:0 0 12px rgba(180,80,255,.50),0 0 28px rgba(160,60,255,.30),inset 0 0 14px rgba(180,100,255,.14);
+  animation:nbtn-p 2.4s ease-in-out infinite;
+}
+@keyframes nbtn-p{
+  0%,100%{box-shadow:0 0 12px rgba(180,80,255,.50),0 0 28px rgba(160,60,255,.30),inset 0 0 14px rgba(180,100,255,.14);}
+  50%{box-shadow:0 0 20px rgba(200,100,255,.80),0 0 44px rgba(180,80,255,.50),inset 0 0 22px rgba(200,120,255,.22);}
+}
+
+/* ── HOME：ピンクガラス（CHARACTER風） ── */
+.nbtn-pink{
+  background:linear-gradient(135deg,rgba(255,60,180,.28),rgba(200,0,120,.22));
+  color:#ff88cc;font-size:13px;
+  border:1.5px solid rgba(255,80,180,.55);
+  box-shadow:0 0 12px rgba(255,60,180,.50),0 0 28px rgba(255,30,140,.30),inset 0 0 14px rgba(255,80,180,.14);
+  animation:nbtn-pk 2.6s ease-in-out infinite;
+}
+@keyframes nbtn-pk{
+  0%,100%{box-shadow:0 0 12px rgba(255,60,180,.50),0 0 28px rgba(255,30,140,.30),inset 0 0 14px rgba(255,80,180,.14);}
+  50%{box-shadow:0 0 20px rgba(255,80,200,.85),0 0 44px rgba(255,60,180,.55),inset 0 0 22px rgba(255,120,200,.22);}
+}
+
+/* ── SSR演出ボタン：ゴールドガラス（GACHA風） ── */
+.nbtn-gold{
+  background:linear-gradient(135deg,rgba(255,200,60,.28),rgba(255,140,20,.22));
+  color:#ffdd66;font-size:13px;font-weight:900;
+  border:1.5px solid rgba(255,210,60,.60);
+  box-shadow:0 0 12px rgba(255,200,60,.55),0 0 28px rgba(255,160,0,.32),inset 0 0 14px rgba(255,220,60,.16);
+  animation:nbtn-g 2s ease-in-out infinite;
+}
+@keyframes nbtn-g{
+  0%,100%{box-shadow:0 0 12px rgba(255,200,60,.55),0 0 28px rgba(255,160,0,.32),inset 0 0 14px rgba(255,220,60,.16);}
+  50%{box-shadow:0 0 22px rgba(255,220,80,.90),0 0 46px rgba(255,180,0,.58),inset 0 0 24px rgba(255,240,80,.26);}
+}
+
+/* ══════════════════════════════════════
+   MENU — 斜め画像フルスクリーン
+══════════════════════════════════════ */
+#s-menu{background:transparent;}
+#menu-img-area{position:absolute;inset:0;z-index:1;}
+
+.hcard{
+  position:absolute;height:80%;width:auto;
+  border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.70),0 0 20px rgba(100,60,255,.30);
+}
+.hc1{left:2%; top:8%;  transform:rotate(-11deg);z-index:1;}
+.hc2{left:26%;top:4%;  transform:rotate(-1deg); z-index:4;box-shadow:0 8px 30px rgba(0,0,0,.80),0 0 28px rgba(140,80,255,.45);}
+.hc3{left:50%;top:9%;  transform:rotate(9deg);  z-index:2;}
+.hc-ssr{
+  right:1%;top:6%;height:76%;
+  border-radius:12px;transform:rotate(16deg);z-index:0;
+  opacity:.65;
+  background:linear-gradient(135deg,#ead8ff,#c8b8ff,#f0d8ff);
+  border:2px solid rgba(200,150,255,.65);
+  box-shadow:0 0 20px rgba(200,150,255,.35);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;width:auto;aspect-ratio:2/3;
+}
+.hc-ssr .secret-spin{animation:sspin 4s linear infinite;}
+@keyframes sspin{to{transform:rotate(360deg);}}
+.hc-ssr .slbl{font-family:'Orbitron',sans-serif;font-weight:900;font-size:13px;color:#ffd700;text-shadow:0 0 14px rgba(255,200,0,1);animation:spulse 1.8s ease-in-out infinite;}
+@keyframes spulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+.hc-ssr .ssub{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,200,80,.50);}
+
+/* タイトルオーバーレイ */
+#menu-top{
+  position:absolute;top:0;left:0;right:0;height:48px;z-index:10;
+  background:linear-gradient(180deg,rgba(3,1,26,.92) 50%,transparent);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+#menu-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:20px;letter-spacing:.14em;
+  color:#c8daee;
+  text-shadow:0 0 6px rgba(180,210,240,.75),0 0 14px rgba(140,185,230,.50);
+  animation:menuTitleNoise 6s ease-in-out infinite;
+}
+@keyframes menuTitleNoise{
+  0%,82%,100%{transform:translate(0,0);clip-path:none;filter:none;}
+  83%{transform:translate(-2px,1px);clip-path:inset(10% 0 82% 0);filter:brightness(1.4) hue-rotate(15deg);}
+  84%{transform:translate(2px,-1px);clip-path:inset(70% 0 10% 0);filter:saturate(1.8);}
+  85%{transform:translate(0,0);clip-path:none;filter:none;}
+  86%{clip-path:inset(40% 0 48% 0);filter:brightness(1.2) hue-rotate(-10deg);}
+  87%{clip-path:none;filter:none;}
+}
+#menu-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(180,120,255,.60);letter-spacing:.26em;}
+
+/* ボタンオーバーレイ */
+#menu-bottom{
+  position:absolute;bottom:0;left:0;right:0;height:204px;z-index:10;
+  background:linear-gradient(0deg,rgba(230,240,252,.55) 55%,transparent);
+  display:flex;align-items:flex-end;justify-content:center;padding:0 10px 10px;gap:140px;
+}
+
+/* ─── ガチャボタン：枠.png 元サイズ比率(2.21:1)で表示 ─── */
+/*
+  PNG全体: 1750×1750px（正方形）
+  フレーム内容: left=56 top=505 right=1692 bottom=1244 → 1636×739px
+  2ボタン並列: 各幅≈405px → 高さ=405×(739/1636)≈183px
+  background-size:100% auto → bg正方形(405×405px)
+  フレーム上端オフセット: 405×(505/1750)≈117px → background-position-y:-117px
+*/
+.gbtn{
+  flex: 0 0 220px;
+  height:93px;
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  letter-spacing:.06em;
+  position:relative;
+  background:url('ガチャボタン　枠.png') center -64px / 100% auto no-repeat;
+  border:none;
+  border-radius:0;
+  overflow:hidden;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .12s ease, filter .12s ease;
+  /* フレームの斜めカット形状（左上・右下コーナーカット、260×110px基準） */
+  clip-path: polygon(19% 0%, 100% 0%, 100% 81%, 89% 100%, 0% 100%, 0% 42%);
+}
+.gbtn:active{transform:scale(.96);}
+
+/* ── 大きな縦光 左右スウィープ ── */
+.gbtn::before{
+  content:'';
+  position:absolute;
+  top:-8%; bottom:-8%;
+  width:50%;
+  background:linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.0) 15%,
+    rgba(255,255,255,0.55) 50%,
+    rgba(255,255,255,0.0) 85%,
+    transparent 100%
+  );
+  pointer-events:none;
+  z-index:2;
+  animation:gbtn-light-sweep 3.2s cubic-bezier(0.45,0,0.55,1) infinite;
+}
+@keyframes gbtn-light-sweep{
+  0%   { left:-50%; }
+  50%  { left:100%; }
+  100% { left:-50%; }
+}
+
+/* １回引く：ピンク背景 + 白文字 */
+.gbtn-1{
+  background:
+    url('ガチャボタン　枠.png') center -64px / 100% auto no-repeat,
+    linear-gradient(135deg, rgba(255,100,180,0.62), rgba(255,30,140,0.55));
+  color:#ffffff;
+  font-size:22px;
+  letter-spacing:.08em;
+  text-shadow:
+    0 1px 0 rgba(200,0,100,.50),
+    0 0 10px rgba(255,80,180,.70),
+    0 0 22px rgba(255,0,140,.45);
+  animation:gbtn1-glow 2.2s ease-in-out infinite;
+}
+@keyframes gbtn1-glow{
+  0%,100%{filter:drop-shadow(0 0 6px rgba(255,60,200,.40));}
+  50%     {filter:drop-shadow(0 0 14px rgba(255,80,220,.75));}
+}
+
+/* １０回引く：イエロー背景 + 白文字 */
+.gbtn-10{
+  background:
+    url('ガチャボタン　枠.png') center -64px / 100% auto no-repeat,
+    linear-gradient(135deg, rgba(255,210,60,0.65), rgba(255,160,0,0.55));
+  color:#ffffff;
+  font-size:18px;
+  letter-spacing:.05em;
+  text-shadow:
+    0 1px 0 rgba(160,80,0,.50),
+    0 0 10px rgba(255,200,0,.65),
+    0 0 22px rgba(255,140,0,.40);
+  animation:gbtn10-glow 2.4s ease-in-out infinite;
+}
+@keyframes gbtn10-glow{
+  0%,100%{filter:drop-shadow(0 0 6px rgba(255,200,0,.40));}
+  50%     {filter:drop-shadow(0 0 14px rgba(255,220,0,.75));}
+}
+
+/* ══════════════════════════════════════
+   VIDEO SCREEN
+══════════════════════════════════════ */
+#s-video{background:#000;position:relative;}
+#gacha-video{width:100%;height:100%;object-fit:cover;display:block;}
+#video-skip-hint{
+  position:absolute;bottom:14px;right:14px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,.50);letter-spacing:.14em;
+  animation:blink 1.8s ease-in-out infinite;pointer-events:none;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.12;}}
+
+/* ══════════════════════════════════════
+   カードレアリティ背景
+══════════════════════════════════════ */
+/* ══ S: ホログラフィック等角キューブ ══ */
+.cbg-s{
+  background-color:#b8ece0;
+  position:relative;overflow:hidden;
+  isolation:isolate; /* stacking context → ::before/::after の z:-1 が img の後ろに収まる */
+}
+.cbg-s::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(30deg, rgba(160,230,220,.75) 12%, transparent 12.5%, transparent 87%, rgba(160,230,220,.75) 87.5%),
+    linear-gradient(150deg,rgba(160,230,220,.75) 12%, transparent 12.5%, transparent 87%, rgba(160,230,220,.75) 87.5%),
+    linear-gradient(30deg, rgba(200,240,200,.65) 12%, transparent 12.5%, transparent 87%, rgba(200,240,200,.65) 87.5%),
+    linear-gradient(150deg,rgba(200,240,200,.65) 12%, transparent 12.5%, transparent 87%, rgba(200,240,200,.65) 87.5%),
+    linear-gradient(60deg, rgba(130,210,210,.55) 25%, transparent 25%, transparent 75%, rgba(130,210,210,.55) 75%),
+    linear-gradient(60deg, rgba(155,225,210,.55) 25%, transparent 25%, transparent 75%, rgba(155,225,210,.55) 75%);
+  background-size:22px 38px;
+  background-position:0 0, 0 0, 11px 19px, 11px 19px, 0 0, 11px 19px;
+  animation:s-holo 8s ease-in-out infinite;
+  pointer-events:none;z-index:-1;
+}
+@keyframes s-holo{
+  0%  {filter:hue-rotate(0deg)   brightness(1.05) saturate(1.1);}
+  25% {filter:hue-rotate(50deg)  brightness(1.12) saturate(1.3);}
+  50% {filter:hue-rotate(110deg) brightness(1.08) saturate(1.2);}
+  75% {filter:hue-rotate(170deg) brightness(1.06) saturate(1.25);}
+  100%{filter:hue-rotate(0deg)   brightness(1.05) saturate(1.1);}
+}
+.cbg-s::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.65) 50%,transparent 65%);
+  background-size:250% 250%;
+  animation:s-shimmer 3s linear infinite;
+  pointer-events:none;z-index:-1;
+}
+@keyframes s-shimmer{
+  0%  {background-position:200% 50%;}
+  100%{background-position:-200% 50%;}
+}
+
+/* ══ SR: 3Dガラスタイル ══ */
+.cbg-sr{
+  background:linear-gradient(135deg,#ff0099 0%,#bb00ff 28%,#0088ff 58%,#ff00dd 100%);
+  background-size:200% 200%;
+  animation:sr-grad 4s ease-in-out infinite;
+  position:relative;overflow:hidden;
+  isolation:isolate;
+}
+@keyframes sr-grad{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+.cbg-sr::before{
+  content:'';position:absolute;inset:0;
+  /* 3Dタイルのハイライト — 大きく・濃く */
+  background-image:
+    radial-gradient(ellipse at 25% 25%,rgba(255,255,255,1.0) 0%,rgba(255,255,255,.80) 22%,rgba(255,200,255,.40) 40%,transparent 56%),
+    radial-gradient(ellipse at 75% 75%,rgba(255,255,255,.70) 0%,rgba(255,180,255,.45) 30%,transparent 52%);
+  background-size:28px 28px;
+  background-repeat:repeat;
+  mix-blend-mode:screen;
+  pointer-events:none;z-index:-1;
+}
+.cbg-sr::after{
+  content:'';position:absolute;inset:0;
+  /* タイルグリッド線 — 太く・濃く */
+  background-image:
+    repeating-linear-gradient(0deg,  rgba(255,255,255,.85) 1.5px,transparent 1.5px,transparent 26.5px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.85) 1.5px,transparent 1.5px,transparent 26.5px);
+  animation:sr-tile-sparkle 1.4s ease-in-out infinite;
+  pointer-events:none;z-index:-1;
+}
+@keyframes sr-tile-sparkle{0%,100%{opacity:.70;}50%{opacity:1;}}
+
+/* ══ SSR: ダークゴールド豪華カード ══ */
+.cbg-ssr{
+  background:linear-gradient(145deg,#0c0800 0%,#201200 35%,#301a00 65%,#180c00 100%);
+  position:relative;overflow:hidden;
+  isolation:isolate;
+}
+/* 縦に走る左右スイープ光 — img の上に重ねる */
+.cbg-ssr::before{
+  content:'';position:absolute;
+  top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,230,100,.00) 20%,
+    rgba(255,230,100,.70) 42%,
+    rgba(255,255,200,.95) 50%,
+    rgba(255,230,100,.70) 58%,
+    rgba(255,230,100,.00) 80%,
+    transparent 100%
+  );
+  animation:ssr-sweep 2.2s ease-in-out infinite;
+  pointer-events:none;z-index:2;
+}
+@keyframes ssr-sweep{
+  0%   {left:-100%;}
+  100% {left:140%;}
+}
+.cbg-ssr::after{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 50% 25%,rgba(255,210,60,.50) 0%,rgba(255,150,0,.25) 45%,transparent 72%),
+    radial-gradient(ellipse at 20% 80%,rgba(255,180,0,.22) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 70%,rgba(255,160,0,.20) 0%,transparent 50%),
+    radial-gradient(circle,rgba(255,215,0,.95) 1.5px,transparent 1.5px) 4px 4px / 38px 38px,
+    radial-gradient(circle,rgba(255,180,0,.75) 1px,transparent 1px) 10px 8px / 22px 22px;
+  animation:ssr-gold-glow 2.4s ease-in-out infinite;
+  pointer-events:none;z-index:-1;
+}
+@keyframes ssr-gold-glow{0%,100%{opacity:.75;}50%{opacity:1;}}
+
+/* ── レアリティバッジ ── */
+.rb-s{
+  background:linear-gradient(135deg,#5888c8,#80aee0,#4878b8);
+  color:#fff;font-weight:900;
+  border:1px solid rgba(100,170,240,.70);
+  text-shadow:0 1px 4px rgba(0,50,120,.55);
+  box-shadow:0 0 6px rgba(80,150,255,.45);
+}
+.rb-sr{
+  background:linear-gradient(135deg,#00c060,#40e890,#00a050);
+  background-size:200% 200%;
+  color:#fff;font-weight:900;
+  border:1px solid rgba(0,220,100,.75);
+  text-shadow:0 1px 2px rgba(0,80,30,.60);
+  box-shadow:0 0 8px rgba(0,200,80,.50);
+  animation:rb-sr-shift 2.5s linear infinite;
+}
+@keyframes rb-sr-shift{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+.rb-ssr{
+  background:linear-gradient(135deg,#ffd700,#ffb000,#ffe060,#ff9800);
+  background-size:200% 200%;
+  color:#3a1800;font-weight:900;
+  border:1.5px solid rgba(255,215,0,.85);
+  text-shadow:0 1px 0 rgba(255,255,255,.50);
+  box-shadow:0 0 12px rgba(255,175,0,.80),0 0 24px rgba(255,110,0,.40);
+  animation:rb-ssr-shift 1.5s linear infinite;
+}
+@keyframes rb-ssr-shift{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+
+/* single-rarity S表示 */
+.rar-s{color:#88c4f5;text-shadow:0 0 8px rgba(90,170,255,.82),0 0 20px rgba(50,130,255,.50);}
+
+/* tcard レアリティ別ボーダー */
+.tcard.cbg-s{border-color:rgba(70,150,255,.50);}
+.tcard.cbg-sr{border-color:rgba(200,60,255,.70);box-shadow:0 0 8px rgba(170,0,255,.35);}
+.tcard.cbg-ssr,.tcard.tssr{border-color:rgba(255,200,0,.88);box-shadow:0 0 14px rgba(255,190,0,.65);}
+
+/* ══════════════════════════════════════
+   SINGLE RESULT — ポップサイバー背景
+══════════════════════════════════════ */
+#s-single{flex-direction:row;}
+#single-left{
+  position:relative;z-index:2;
+  width:50%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+}
+.flip-card{
+  width:220px;height:330px;
+  position:relative;transform-style:preserve-3d;
+  transition:transform .75s cubic-bezier(.4,0,.2,1);
+}
+.flip-card.done{transform:rotateY(180deg);}
+.cface,.cback{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cback{
+  background:linear-gradient(135deg,#f0d8ff,#dde8ff,#d8f0ff,#ffd8f5,#f0d8ff);
+  border:2px solid rgba(180,120,255,.60);
+  display:flex;align-items:center;justify-content:center;
+}
+.cface{transform:rotateY(180deg);overflow:hidden;border:2px solid rgba(180,120,255,.70);box-shadow:0 0 24px rgba(140,80,255,.45);}
+.cface img{width:100%;height:100%;object-fit:cover;display:block;}
+.rb{position:absolute;top:5px;left:5px;font-family:'Orbitron',sans-serif;font-weight:900;font-size:9px;padding:2px 5px;border-radius:3px;letter-spacing:.05em;}
+.rb-sr{background:rgba(0,180,70,.22);border:1px solid #00dd66;color:#ffffff;text-shadow:0 1px 2px rgba(0,60,20,.55);}
+.rb-ssr{background:rgba(255,200,0,.22);border:1px solid #ffd700;color:#ffd700;text-shadow:0 0 10px rgba(255,200,0,1);}
+
+#single-right{
+  position:relative;z-index:2;
+  flex:1;height:100%;
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  padding:12px 16px 12px 10px;gap:10px;
+}
+#single-rarity{font-family:'Orbitron',sans-serif;font-weight:900;font-size:30px;letter-spacing:.06em;}
+.rar-s{color:#2299dd;text-shadow:0 1px 4px rgba(0,100,200,.45);}
+.rar-sr{color:#00aa44;text-shadow:0 1px 5px rgba(0,150,60,.50);}
+.rar-ssr{color:#e68800;text-shadow:0 0 10px rgba(255,180,0,1),0 0 22px rgba(255,140,0,.80);animation:ssr-rar 1.8s ease-in-out infinite;}
+@keyframes ssr-rar{0%,100%{text-shadow:0 0 10px rgba(255,180,0,1),0 0 22px rgba(255,140,0,.80);}50%{text-shadow:0 0 16px rgba(255,210,0,1),0 0 36px rgba(255,160,0,1);}}
+#single-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;color:#cc2266;letter-spacing:.06em;line-height:1.3;}
+#single-btns{display:flex;flex-direction:column;gap:8px;width:100%;}
+.sbtn{width:100%;height:36px;font-size:12px;}
+
+/* ── ポップボタン（シングル結果専用・紫禁止） ── */
+.nbtn-pop-pink{
+  background:linear-gradient(145deg,#ff2d7a,#ff6aaa);
+  color:#fff;font-size:13px;font-weight:900;
+  border:2.5px solid #e0005a;
+  text-shadow:0 1px 3px rgba(160,0,60,.55);
+  box-shadow:0 4px 0 #b80048,0 6px 18px rgba(255,40,110,.45);
+  transition:transform .10s,box-shadow .10s;
+}
+.nbtn-pop-pink:hover{filter:brightness(1.08);}
+.nbtn-pop-pink:active{transform:translateY(3px) scale(.95)!important;box-shadow:0 1px 0 #b80048,0 2px 8px rgba(255,40,110,.30)!important;}
+
+.nbtn-pop-sky{
+  background:linear-gradient(145deg,#00b8ee,#44d8ff);
+  color:#fff;font-size:13px;font-weight:900;
+  border:2.5px solid #0090c0;
+  text-shadow:0 1px 3px rgba(0,70,120,.50);
+  box-shadow:0 4px 0 #007099,0 6px 18px rgba(0,180,240,.45);
+  transition:transform .10s,box-shadow .10s;
+}
+.nbtn-pop-sky:hover{filter:brightness(1.08);}
+.nbtn-pop-sky:active{transform:translateY(3px) scale(.95)!important;box-shadow:0 1px 0 #007099,0 2px 8px rgba(0,180,240,.30)!important;}
+
+/* ══════════════════════════════════════
+   10-PULL
+══════════════════════════════════════ */
+#s-ten{background:transparent;}
+#ten-inner{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;}
+#ten-hd{
+  flex-shrink:0;height:34px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:12px;
+  color:#ffd700;letter-spacing:.14em;
+  text-shadow:0 0 10px rgba(255,200,0,.90),0 0 24px rgba(255,160,0,.60);
+  border-bottom:1px solid rgba(255,200,0,.25);
+  background:linear-gradient(180deg,rgba(3,1,26,.80),transparent);
+}
+#ten-grid{
+  flex:1;min-height:0;
+  display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(2,1fr);
+  gap:4px;padding:4px 8px;
+}
+.tcard{
+  border-radius:7px;overflow:hidden;position:relative;background:rgba(255,240,255,.85);
+  border:1.5px solid rgba(130,70,255,.45);
+  opacity:0;transform:scale(.65) rotateY(90deg);
+  transition:opacity .35s ease,transform .4s cubic-bezier(.22,.68,0,1.3);
+}
+.tcard.shown{opacity:1;transform:scale(1) rotateY(0deg);}
+.tcard img{width:100%;height:100%;object-fit:cover;display:block;}
+.tcard .rb{font-size:7px;padding:1px 4px;}
+.tcard.tssr{border-color:rgba(255,210,0,.85);box-shadow:0 0 14px rgba(255,200,0,.60);}
+#ten-foot{
+  flex-shrink:0;height:46px;
+  display:flex;align-items:center;justify-content:center;gap:8px;padding:0 10px;
+}
+.tfbtn{height:34px;padding:0 16px;font-size:12px;}
+
+/* ══════════════════════════════════════
+   SSR REVEAL — 羽のみ大量高速
+══════════════════════════════════════ */
+#s-ssr{overflow:hidden;}
+#ssr-aurora{
+  position:absolute;inset:0;z-index:0;
+  background:linear-gradient(155deg,#4ab0ff 0%,#70a8ff 20%,#a8a0ff 42%,#ffaaee 65%,#4ec8ff 85%,#82d4ff 100%);
+  background-size:300% 300%;
+  animation:ssr-sky-shift 7s ease-in-out infinite;
+}
+@keyframes ssr-sky-shift{
+  0%,100%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+}
+/* ══ 光リボン Layer 1（斜め左→右へ流れる） ══ */
+#ssr-aurora::before{
+  content:'';position:absolute;
+  top:-60%;left:-120%;width:340%;height:220%;
+  background:linear-gradient(62deg,
+    transparent  0%,
+    transparent 14%,
+    rgba(255,238,100,.00) 18%,
+    rgba(255,238,100,.95) 22%,
+    rgba(255,255,255,1.00) 25%,
+    rgba(120,228,255,.90) 28%,
+    rgba(255,238,100,.00) 32%,
+    transparent 40%,
+    transparent 50%,
+    rgba(255,155,220,.00) 54%,
+    rgba(255,155,220,.92) 58%,
+    rgba(255,255,255,1.00) 61%,
+    rgba(175,235,255,.88) 64%,
+    rgba(255,155,220,.00) 68%,
+    transparent 76%,
+    transparent 84%,
+    rgba(200,255,200,.00) 87%,
+    rgba(200,255,200,.85) 90%,
+    rgba(255,255,255,.98) 92%,
+    rgba(200,255,200,.00) 95%,
+    transparent 100%
+  );
+  animation:ssr-ribbon-slide 2.8s linear infinite;
+  pointer-events:none;z-index:1;
+}
+@keyframes ssr-ribbon-slide{
+  0%  {transform:translate(-25%,-5%);}
+  100%{transform:translate( 25%, 5%);}
+}
+/* ══ 光リボン Layer 2（逆方向・別色） ══ */
+#ssr-aurora::after{
+  content:'';position:absolute;
+  top:-60%;left:-120%;width:340%;height:220%;
+  background:linear-gradient(118deg,
+    transparent  0%,
+    transparent 20%,
+    rgba(255,200,80,.00) 24%,
+    rgba(255,200,80,.88) 27%,
+    rgba(255,255,255,.98) 30%,
+    rgba(220,160,255,.85) 33%,
+    rgba(255,200,80,.00) 37%,
+    transparent 47%,
+    transparent 60%,
+    rgba(160,230,255,.00) 63%,
+    rgba(160,230,255,.90) 67%,
+    rgba(255,255,255,1.00) 70%,
+    rgba(255,180,230,.85) 73%,
+    rgba(160,230,255,.00) 77%,
+    transparent 87%,
+    transparent 100%
+  );
+  animation:ssr-ribbon-slide2 3.4s linear infinite;
+  pointer-events:none;z-index:2;
+}
+@keyframes ssr-ribbon-slide2{
+  0%  {transform:translate( 22%, 8%);}
+  100%{transform:translate(-22%,-8%);}
+}
+#ssr-cv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+#ssr-flash{position:absolute;inset:0;background:#fff;z-index:5;opacity:0;pointer-events:none;transition:opacity .1s;}
+#ssr-flash.on{opacity:1;}
+
+#ssr-body{
+  position:relative;z-index:3;width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;
+  padding-bottom:52px;opacity:0;justify-content:flex-start;
+}
+#ssr-body.reveal{animation:ssr-in .8s cubic-bezier(.22,.68,0,1.3) .15s forwards;}
+@keyframes ssr-in{0%{opacity:0;transform:scale(.5);}65%{transform:scale(1.05);}100%{opacity:1;transform:scale(1);}}
+
+#ssr-label{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:58px;line-height:1;letter-spacing:.08em;
+  color:#ffd700;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 14px rgba(255,215,0,1),
+    0 0 30px rgba(255,185,0,.95),
+    0 0 58px rgba(255,150,0,.70),
+    0 3px 0 rgba(160,90,0,.55);
+  animation:gold-pulse 2s ease-in-out infinite;
+  margin-top:2px;
+}
+@keyframes gold-pulse{
+  0%,100%{text-shadow:0 0 5px #fff,0 0 14px rgba(255,215,0,1),0 0 30px rgba(255,185,0,.95),0 0 58px rgba(255,150,0,.70);}
+  50%{text-shadow:0 0 10px #fff,0 0 24px rgba(255,225,0,1),0 0 50px rgba(255,200,0,1),0 0 88px rgba(255,160,0,.82);}
+}
+#ssr-img{flex:1;min-height:0;width:auto;max-height:calc(100% - 120px);display:block;filter:drop-shadow(0 6px 20px rgba(200,160,100,.45)) brightness(1.06);animation:ssr-float 2.8s ease-in-out infinite;object-fit:contain;}
+@keyframes ssr-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+#ssr-info{flex-shrink:0;text-align:center;padding:2px 0;}
+#ssr-char{font-family:'Orbitron',sans-serif;font-weight:900;font-size:14px;color:#7744bb;letter-spacing:.14em;text-shadow:0 1px 6px rgba(150,80,200,.30);}
+#ssr-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;color:#9966cc;letter-spacing:.16em;margin-top:1px;}
+/* SSRはSKIPボタンのみ（右下小さく） */
+#ssr-btns{
+  position:absolute;bottom:12px;right:14px;z-index:4;
+  display:flex;opacity:0;
+}
+#ssr-btns.reveal{animation:fade-up .5s ease .8s forwards;}
+@keyframes fade-up{0%{opacity:0;transform:translateY(8px);}100%{opacity:1;transform:translateY(0);}}
+.ssrbtn{height:30px;padding:0 14px;font-size:11px;font-family:'Share Tech Mono',monospace;letter-spacing:.1em;}
+</style>
+<style>body{background:url('横型　スマホゲーム　背景.png')center/cover no-repeat fixed!important;}</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ MENU ══ -->
+<div id="s-menu" class="screen active">
+  <canvas class="bgcv" id="menu-cv"></canvas>
+  <!-- 斜め大判カード -->
+  <div id="menu-img-area">
+    <img class="hcard hc1" src="テクノ系　ジャケ写　サイバー・パルス.png" alt="">
+    <img class="hcard hc2" src="バラード　ジャケ写　星空のメロディ.png" alt="">
+    <img class="hcard hc3" src="メインジャケ写　ネオンビート.png" alt="">
+  </div>
+  <!-- タイトル上部 -->
+  <div id="menu-top">
+    <span id="menu-title">NEON BEAT GACHA</span>
+    <span id="menu-sub">- PULL FOR YOUR DESTINY -</span>
+  </div>
+  <!-- ボタン下部 -->
+  <div id="menu-bottom">
+    <button class="gbtn gbtn-1 neon-btn" onclick="startPull(1)">
+      １回引く
+    </button>
+    <button class="gbtn gbtn-10 neon-btn" onclick="startPull(10)">
+      １０回引く　SSR確定
+    </button>
+  </div>
+</div>
+
+<!-- ══ VIDEO ══ -->
+<div id="s-video" class="screen">
+  <video id="gacha-video" src="ガチャ演奏動画.mp4" playsinline webkit-playsinline></video>
+  <div id="video-skip-hint">TAP TO SKIP</div>
+</div>
+
+<!-- ══ SINGLE RESULT ══ -->
+<div id="s-single" class="screen" style="flex-direction:row;">
+  <canvas class="bgcv" id="single-cv"></canvas>
+  <div id="single-left">
+    <div class="flip-card" id="flip-card">
+      <div class="cback">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <polygon points="30,4 56,20 56,40 30,56 4,40 4,20" fill="rgba(120,50,255,.12)" stroke="rgba(150,80,255,.55)" stroke-width="1.8"/>
+          <circle cx="30" cy="30" r="10" fill="rgba(140,70,255,.15)" stroke="rgba(170,100,255,.45)" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="cface">
+        <img id="cface-img" src="" alt="">
+        <span class="rb" id="cface-rb"></span>
+      </div>
+    </div>
+  </div>
+  <div id="single-right">
+    <div id="single-rarity">SR</div>
+    <div id="single-name"></div>
+    <div id="single-btns">
+      <button class="sbtn neon-btn nbtn-pop-pink" onclick="goMenu()">もう一度引く</button>
+      <a href="game_home_v1.html" class="sbtn neon-btn nbtn-pop-sky">HOME</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 10-PULL ══ -->
+<div id="s-ten" class="screen">
+  <canvas class="bgcv" id="ten-cv"></canvas>
+  <div id="ten-inner">
+    <div id="ten-hd">
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="none"><polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#ffd700" stroke-width="1.5" fill="rgba(255,200,0,.08)"/></svg>
+      10 PULL RESULT
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="none"><polygon points="10,1 19,6 19,14 10,19 1,14 1,6" stroke="#ffd700" stroke-width="1.5" fill="rgba(255,200,0,.08)"/></svg>
+    </div>
+    <div id="ten-grid"></div>
+    <div id="ten-foot">
+      <button class="tfbtn neon-btn nbtn-gold" id="ssr-see-btn" onclick="showSSR()" style="display:none;">SSR演出</button>
+      <button class="tfbtn neon-btn nbtn-purple" onclick="goMenu()">もう一度</button>
+      <a href="game_home_v1.html" class="tfbtn neon-btn nbtn-pink">HOME</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SSR REVEAL（演出専用・自動遷移） ══ -->
+<div id="s-ssr" class="screen">
+  <div id="ssr-aurora"></div>
+  <canvas id="ssr-cv"></canvas>
+  <div id="ssr-flash"></div>
+  <div id="ssr-body">
+    <div id="ssr-label">SSR</div>
+    <img id="ssr-img" src="リズ　ダイヤモンド.png" alt="SSR リズ">
+    <div id="ssr-info">
+      <div id="ssr-char">リ　ズ</div>
+      <div id="ssr-title">[ ダイヤモンドの歌姫 ]</div>
+    </div>
+  </div>
+  <!-- スキップボタン（小さく・右下） -->
+  <div id="ssr-btns">
+    <button class="ssrbtn neon-btn nbtn-purple" onclick="skipSSR()">SKIP →</button>
+  </div>
+</div>
+
+</div>
+<script>
+(function(){
+'use strict';
+
+/* ── カードデータ ── */
+const S_CARDS=[
+  {rarity:'S',img:'ノア_危険.png',name:'ノア'},
+  {rarity:'S',img:'ノア_嬉しい.png',name:'ノア'},
+  {rarity:'S',img:'ノア_怯えてる.png',name:'ノア'},
+  {rarity:'S',img:'ノア_普通.png',name:'ノア'},
+  {rarity:'S',img:'ノア_案内.png',name:'ノア'},
+  {rarity:'S',img:'ノア_誘導.png',name:'ノア'},
+];
+const SR_CARDS=[
+  {rarity:'SR',img:'ルナ_嬉しい.png',name:'ルナ'},
+  {rarity:'SR',img:'ルナ_歌う.png',name:'ルナ'},
+  {rarity:'SR',img:'ルナ_メイン.png',name:'ルナ'},
+  {rarity:'SR',img:'ルナ　ポーズ.png',name:'ルナ'},
+  {rarity:'SR',img:'リズ　笑顔.png',name:'リズ'},
+  {rarity:'SR',img:'リズ　頑張ったね.png',name:'リズ'},
+  {rarity:'SR',img:'リズ　おつかれ.png',name:'リズ'},
+  {rarity:'SR',img:'リズ　LIVE.png',name:'リズ'},
+];
+const SSR_CARDS=[
+  {rarity:'SSR',img:'リズ　スペシャル.png',name:'リズ [スペシャル]'},
+  {rarity:'SSR',img:'リズ　ルナ_メイン.png',name:'リズ & ルナ'},
+  {rarity:'SSR',img:'リズ　ルナ　バトル.png',name:'リズ & ルナ [バトル]'},
+  {rarity:'SSR',img:'星空のメロディ　ジャケ写.png',name:'星空のメロディ'},
+  {rarity:'SSR',img:'ネオンビート　ジャケ写.png',name:'ネオンビート'},
+  {rarity:'SSR',img:'サイバー・パルス　ジャケ写.png',name:'サイバー・パルス'},
+  {rarity:'SSR',img:'CYBER KISS CRASH　ジャケ写.png',name:'CYBER KISS CRASH'},
+  {rarity:'SSR',img:'Midnight Glitch Love　ジャケ写.png',name:'Midnight Glitch Love'},
+  {rarity:'SSR',img:'Lipstick Logic　ジャケ写.png',name:'Lipstick Logic'},
+];
+function randFrom(a){return a[Math.floor(Math.random()*a.length)];}
+function roll1(){
+  const r=Math.random();
+  if(r<0.05) return randFrom(SSR_CARDS);
+  if(r<0.35) return randFrom(SR_CARDS);
+  return randFrom(S_CARDS);
+}
+function roll10(){
+  const res=[];let hasSsr=false;
+  for(let i=0;i<10;i++){const c=roll1();if(c.rarity==='SSR')hasSsr=true;res.push(c);}
+  if(!hasSsr) res[Math.floor(Math.random()*10)]=randFrom(SSR_CARDS);
+  return res;
+}
+
+const app=document.getElementById('app');
+let W=0,H=0;
+function getWH(){W=app.offsetWidth;H=app.offsetHeight;}
+getWH();
+const ctxMap={};
+const CV_IDS=['menu-cv','single-cv','ten-cv','ssr-cv'];
+function setupAllCV(){
+  CV_IDS.forEach(id=>{
+    const c=document.getElementById(id);if(!c)return;
+    c.width=W;c.height=H;ctxMap[id]=c.getContext('2d');
+  });
+}
+setupAllCV();
+window.addEventListener('resize',()=>{getWH();setupAllCV();});
+
+const SCREENS={menu:'s-menu',video:'s-video',single:'s-single',ten:'s-ten',ssr:'s-ssr'};
+let cur='menu';
+function goScreen(n){
+  Object.values(SCREENS).forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(SCREENS[n]).classList.add('active');
+  cur=n;
+}
+window.goMenu=function(){stopSSR();goScreen('menu');};
+
+/* BG */
+const _bgImg=(()=>{const img=new Image();img.src='横型　スマホゲーム　背景.png';return img;})();
+function drawDiamondBG(c,cW,cH,t){
+  if(_bgImg.complete&&_bgImg.naturalWidth>0){const iw=_bgImg.naturalWidth,ih=_bgImg.naturalHeight,sc=Math.max(cW/iw,cH/ih),sw=iw*sc,sh=ih*sc;c.drawImage(_bgImg,(cW-sw)/2,(cH-sh)/2,sw,sh);}else{c.fillStyle='#e8f0ff';c.fillRect(0,0,cW,cH);}
+}
+
+/* ── メニュー背景カード散りばめ ── */
+const _ALL_IMGS=[
+  'ノア_危険.png','ノア_嬉しい.png','ノア_怯えてる.png','ノア_普通.png','ノア_案内.png','ノア_誘導.png',
+  'ルナ_嬉しい.png','ルナ_歌う.png','ルナ_メイン.png','ルナ　ポーズ.png',
+  'リズ　笑顔.png','リズ　頑張ったね.png','リズ　おつかれ.png','リズ　LIVE.png'
+  // SSR画像は除外
+];
+const _imgCache={};
+_ALL_IMGS.forEach(s=>{const i=new Image();i.src=s;_imgCache[s]=i;});
+
+function _shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function _pickScatter(){
+  const srcs=_shuffle(_ALL_IMGS).slice(0,10);
+  const BOT_LIMIT=H-145; // 245px — ボタン透明ゾーンまで許容
+  return srcs.map((src,i)=>{
+    const h=148+Math.random()*22; // 148〜170px（大きめ）
+    const half=h/2;
+    const targetY=i%2===0?162:178;
+    const rawY=targetY+(Math.random()-.5)*10;
+    const y=Math.max(half+14, Math.min(BOT_LIMIT-half, rawY));
+    const rawX=(i+0.5)/10*W+(Math.random()-.5)*W*0.06;
+    const x=Math.max(half*0.18,Math.min(W-half*0.18,rawX));
+    return {src,x,y,rot:(Math.random()-.5)*0.38,h};
+  });
+}
+
+let _mScatter=[];        // 現在表示中の10枚
+let _mScatterNext=[];    // 次の10枚（フェード中）
+let _mFade=1;            // 0→1でnextにフェードイン
+let _mFading=false;
+const _FADE_SPD=0.018;   // 約55フレーム≈0.9秒でフェード完了
+
+// 起動時に初期カードを選出（画像ロード待ち）
+setTimeout(()=>{_mScatter=_pickScatter();},200);
+
+// 10秒ごとに新しい10枚へ切り替え
+setInterval(()=>{
+  _mScatterNext=_pickScatter();
+  _mFade=0;
+  _mFading=true;
+},10000);
+
+function _drawOneCard(c,src,x,y,h,rot,alpha){
+  const img=_imgCache[src];
+  if(!img||!img.complete||!img.naturalWidth)return;
+  const w=img.naturalWidth/img.naturalHeight*h;
+  const r=9;
+  c.save();
+  c.globalAlpha=alpha;
+  c.translate(x,y);
+  c.rotate(rot);
+  // ピンクグロードロップシャドウ（出っ張り感を強調）
+  c.shadowColor='rgba(255,60,140,0.60)';
+  c.shadowBlur=22;c.shadowOffsetX=0;c.shadowOffsetY=10;
+  // 角丸クリップ
+  c.beginPath();
+  c.moveTo(-w/2+r,-h/2);c.lineTo(w/2-r,-h/2);c.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);
+  c.lineTo(w/2,h/2-r);c.quadraticCurveTo(w/2,h/2,w/2-r,h/2);
+  c.lineTo(-w/2+r,h/2);c.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);
+  c.lineTo(-w/2,-h/2+r);c.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
+  c.closePath();c.clip();
+  c.shadowColor='transparent';
+  c.drawImage(img,-w/2,-h/2,w,h);
+  c.restore();
+}
+
+/* ── キャラカラー 奥行きLEDタイル＋ポップ背景 ──
+   リズ: ホットピンク / ルナ: レッド / ノア: ホワイト（紫禁止）
+── */
+function _tile(c,x,y,s,r,g,b,alpha){
+  const rad=s*0.20, p=s*0.84;
+  c.save();c.globalAlpha=Math.min(alpha,1);
+  c.fillStyle=`rgb(${r},${g},${b})`;
+  c.beginPath();
+  c.moveTo(x-p/2+rad,y-p/2);
+  c.lineTo(x+p/2-rad,y-p/2);c.quadraticCurveTo(x+p/2,y-p/2,x+p/2,y-p/2+rad);
+  c.lineTo(x+p/2,y+p/2-rad);c.quadraticCurveTo(x+p/2,y+p/2,x+p/2-rad,y+p/2);
+  c.lineTo(x-p/2+rad,y+p/2);c.quadraticCurveTo(x-p/2,y+p/2,x-p/2,y+p/2-rad);
+  c.lineTo(x-p/2,y-p/2+rad);c.quadraticCurveTo(x-p/2,y-p/2,x-p/2+rad,y-p/2);
+  c.closePath();c.fill();c.restore();
+}
+
+// ポップアイコン（ネオンカラー・大きめ・紫なし）
+const _POP=[
+  {sym:'★',x:0.04,y:0.10,col:[255,240, 0],  sz:52,ph:0.0, sp:0.020}, // ネオン黄
+  {sym:'♪',x:0.96,y:0.14,col:[  0,255,180], sz:46,ph:1.4, sp:0.018}, // ネオン緑
+  {sym:'♡',x:0.04,y:0.84,col:[255, 20,100], sz:44,ph:2.2, sp:0.016}, // ネオンピンク
+  {sym:'★',x:0.96,y:0.80,col:[  0,230,255], sz:50,ph:0.7, sp:0.023}, // ネオンシアン
+  {sym:'♬',x:0.50,y:0.06,col:[255,100,  0], sz:42,ph:1.9, sp:0.019}, // ネオンオレンジ
+  {sym:'◆',x:0.20,y:0.93,col:[255,240, 0],  sz:38,ph:3.1, sp:0.017}, // ネオン黄
+  {sym:'♩',x:0.80,y:0.91,col:[  0,255,100], sz:40,ph:0.3, sp:0.021}, // ネオングリーン
+  {sym:'✦',x:0.14,y:0.48,col:[255, 20,100], sz:36,ph:2.6, sp:0.018}, // ネオンピンク
+  {sym:'✦',x:0.86,y:0.44,col:[  0,200,255], sz:34,ph:1.1, sp:0.022}, // ネオン水色
+];
+
+function drawCyberGrid(c,t){
+  // ══ 1. ベース：ダークネイビー（紫なし） ══
+  const bg=c.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#020c1e');
+  bg.addColorStop(0.5,'#030e24');
+  bg.addColorStop(1,'#020918');
+  c.fillStyle=bg;c.fillRect(0,0,W,H);
+
+  const pulse=0.72+0.18*Math.sin(t*0.85);
+  const VX=W*0.5, VY=H*0.5;
+
+  // ══ 2. 奥行きLEDタイル（レインボー・紫完全排除） ══
+  // 紫(240-315°)を完全に除外した安全色相リスト
+  const SH=[0,20,38,55,80,120,155,180,200,225,340,355];
+  const SN=SH.length;
+  // パレット位置を時間でゆっくりシフト（リスト内のみ回る→紫ゼロ）
+  const palOff=Math.floor(t*0.55)%SN;
+
+  // HSL→RGB変換（l固定0.62）
+  function h2r(hue){
+    const h=((hue%360)+360)%360,s=1,l=0.62;
+    const q=l+s-l*s,p=2*l-q;
+    function f(t){t=(t%1+1)%1;return t<1/6?p+(q-p)*6*t:t<1/2?q:t<2/3?p+(q-p)*(2/3-t)*6:p;}
+    return[Math.round(f(h/360+1/3)*255),Math.round(f(h/360)*255),Math.round(f(h/360-1/3)*255)];
+  }
+
+  const COLS=26,ROWS=13;
+  for(let row=0;row<ROWS;row++){
+    for(let col=0;col<COLS;col++){
+      const nx=(col/(COLS-1))-0.5;
+      const ny=(row/(ROWS-1))-0.5;
+      const dist=Math.sqrt(nx*nx*1.3+ny*ny)/0.64;
+      if(dist>1.06) continue;
+
+      const tSize=4+Math.pow(dist,1.3)*60;
+      const spread=0.38+dist*0.54;
+      const px=VX+nx*W*spread*1.10;
+      const py=VY+ny*H*spread*1.28;
+      if(px<-50||px>W+50||py<-50||py>H+50) continue;
+
+      const anim=0.50+0.38*Math.sin(t*1.4+col*0.40+row*0.60);
+      const hueIdx=((col*2+row*3)%SN+palOff+SN)%SN;
+      const [r,g,b]=h2r(SH[hueIdx]);
+      const bright=0.20+0.80*Math.pow(dist,0.50);
+      const alpha=(0.06+0.92*Math.pow(dist,0.75))*pulse*anim;
+
+      _tile(c,px,py,tSize,
+        Math.min(255,Math.round(r*bright)),
+        Math.min(255,Math.round(g*bright)),
+        Math.min(255,Math.round(b*bright)),
+        alpha);
+    }
+  }
+
+  // ══ 3. 中心グロー（安全色相のみ使用） ══
+  const glowHue=SH[Math.floor(t*0.4)%SN];
+  const glowHue2=SH[(Math.floor(t*0.4)+3)%SN];
+  const glow=c.createRadialGradient(VX,VY,0,VX,VY,W*0.42);
+  glow.addColorStop(0,`hsla(${glowHue},100%,92%,${0.60+0.15*Math.sin(t*1.1)})`);
+  glow.addColorStop(0.30,`hsla(${glowHue2},90%,65%,0.18)`);
+  glow.addColorStop(0.65,`hsla(${SH[(Math.floor(t*0.4)+6)%SN]},80%,50%,0.06)`);
+  glow.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle=glow;c.fillRect(0,0,W,H);
+
+  // ══ 4. レインボー放射線（安全色相のみ） ══
+  c.save();
+  const RAYS=18;
+  for(let i=0;i<RAYS;i++){
+    const angle=(i/RAYS)*Math.PI*2+t*0.05;
+    const a=(0.08+0.05*Math.sin(t*1.3+i*0.7))*pulse;
+    const rh=SH[(i*2%SN+palOff)%SN]; // 安全リストからのみ選択
+    c.strokeStyle=`hsla(${rh},100%,65%,${a})`;
+    c.lineWidth=1.8+Math.sin(t*0.9+i)*1.0;
+    c.beginPath();c.moveTo(VX,VY);
+    c.lineTo(VX+Math.cos(angle)*W*0.85,VY+Math.sin(angle)*H*0.95);
+    c.stroke();
+  }
+  c.restore();
+
+  // ══ 5. 大きなポップアイコン ══
+  c.save();c.textAlign='center';c.textBaseline='middle';
+  _POP.forEach(ic=>{
+    ic.ph+=ic.sp;
+    const a=0.72+0.24*Math.sin(ic.ph);
+    const oy=Math.sin(ic.ph*0.85)*8;
+    const os=1+0.16*Math.sin(ic.ph*1.2);
+    c.save();c.globalAlpha=a;
+    const [cr,cg,cb]=ic.col;
+    c.fillStyle=`rgb(${cr},${cg},${cb})`;
+    c.font=`bold ${Math.round(ic.sz*os)}px sans-serif`;
+    c.shadowColor=`rgba(${cr},${cg},${cb},1.0)`;c.shadowBlur=32;
+    c.fillText(ic.sym,ic.x*W,ic.y*H+oy);
+    // ネオン二重グロー
+    c.shadowBlur=14;c.shadowColor=`rgba(255,255,255,0.70)`;
+    c.fillText(ic.sym,ic.x*W,ic.y*H+oy);
+    c.restore();
+  });
+  c.restore();
+
+  // ══ 6. スキャンライン（安全色相） ══
+  const scanY=((t*24)%(H+44))-22;
+  const scanH=SH[Math.floor(t*0.8)%SN];
+  const sg=c.createLinearGradient(0,scanY-14,0,scanY+14);
+  sg.addColorStop(0,`hsla(${scanH},100%,72%,0)`);
+  sg.addColorStop(0.5,`hsla(${scanH},100%,72%,${0.16*pulse})`);
+  sg.addColorStop(1,`hsla(${scanH},100%,72%,0)`);
+  c.fillStyle=sg;c.fillRect(0,scanY-14,W,28);
+
+  // ══ 7. コーナーブラケット（固定安全色） ══
+  const CL=30,CW=2.8;
+  const cornerHues=[0,55,155,200]; // 赤・黄・緑・シアン（全部安全）
+  [[0,0,1,1],[W,0,-1,1],[0,H,1,-1],[W,H,-1,-1]]
+    .forEach(([cx,cy,sx,sy],i)=>{
+      const ch=cornerHues[i];
+      c.save();
+      c.strokeStyle=`hsla(${ch},100%,65%,${0.90*pulse})`;
+      c.lineWidth=CW;
+      c.shadowColor=`hsla(${ch},100%,65%,0.80)`;c.shadowBlur=10;
+      c.beginPath();c.moveTo(cx+sx*CL,cy);c.lineTo(cx,cy);c.lineTo(cx,cy+sy*CL);c.stroke();
+      c.fillStyle=`hsla(${ch},100%,70%,${pulse})`;
+      c.beginPath();c.arc(cx,cy,4.5,0,Math.PI*2);c.fill();
+      c.restore();
+    });
+}
+
+/* ── メニューCanvas（サイバー背景＋カード散りばめ） ── */
+let mT=0;
+function drawMenuBG(){
+  const c=ctxMap['menu-cv'];if(!c)return;mT+=.016;
+  c.clearRect(0,0,W,H);
+  drawCyberGrid(c,mT);
+
+  // フェードトランジション管理
+  if(_mFading){
+    _mFade+=_FADE_SPD;
+    if(_mFade>=1){
+      _mFade=1;_mFading=false;
+      _mScatter=_mScatterNext;_mScatterNext=[];
+    }
+  }
+
+  const BASE_ALPHA=0.62;
+  // 現在のカード（フェードアウト中は薄くなる）
+  if(_mScatter.length){
+    const a=_mFading?(1-_mFade)*BASE_ALPHA:BASE_ALPHA;
+    _mScatter.forEach(cd=>_drawOneCard(c,cd.src,cd.x,cd.y,cd.h,cd.rot,a));
+  }
+  // 次のカード（フェードイン）
+  if(_mFading&&_mScatterNext.length){
+    const a=_mFade*BASE_ALPHA;
+    _mScatterNext.forEach(cd=>_drawOneCard(c,cd.src,cd.x,cd.y,cd.h,cd.rot,a));
+  }
+}
+
+/* ── ポップサイバーCanvas（ANTE/Single共用）── ひし形背景 */
+let pcT=0;
+const PC_ICONS=[
+  {sx:.06,sy:.22,sym:'♩',col:'0,255,200',sz:18,ph:0,sp:.025},
+  {sx:.90,sy:.18,sym:'★',col:'255,60,200',sz:17,ph:1,sp:.018},
+  {sx:.04,sy:.70,sym:'♪',col:'80,160,255',sz:18,ph:2,sp:.022},
+  {sx:.94,sy:.68,sym:'◆',col:'255,200,0',sz:16,ph:.5,sp:.030},
+  {sx:.50,sy:.88,sym:'♬',col:'200,80,255',sz:17,ph:1.5,sp:.020},
+  {sx:.20,sy:.08,sym:'◇',col:'0,255,160',sz:14,ph:3.0,sp:.016},
+  {sx:.80,sy:.90,sym:'♫',col:'255,100,80',sz:15,ph:2.5,sp:.024},
+  {sx:.34,sy:.80,sym:'♩',col:'255,40,160',sz:14,ph:0.8,sp:.019},
+  {sx:.72,sy:.10,sym:'★',col:'0,255,140',sz:14,ph:2.2,sp:.021},
+];
+function drawPopCyber(cid){
+  const c=ctxMap[cid];if(!c)return;
+  pcT+=.018;
+  c.clearRect(0,0,W,H);
+  drawDiamondBG(c,W,H,pcT);
+  // フローティング音符アイコン（ひし形の上に重ねる）
+  PC_ICONS.forEach(ic=>{
+    ic.ph+=ic.sp;const a=.45+.28*Math.sin(ic.ph);const oy=Math.sin(ic.ph)*7;
+    c.save();c.globalAlpha=a;c.fillStyle=`rgb(${ic.col})`;
+    c.font=`bold ${ic.sz}px sans-serif`;c.textAlign='center';c.textBaseline='middle';
+    c.shadowColor=`rgb(${ic.col})`;c.shadowBlur=10;
+    c.fillText(ic.sym,ic.sx*W,ic.sy*H+oy);c.restore();
+  });
+}
+
+/* ── 星背景Canvas（10-pull用） ── */
+let tT=0;
+function drawStarBG(cid){
+  const c=ctxMap[cid];if(!c)return;tT+=.016;
+  c.clearRect(0,0,W,H);
+  drawDiamondBG(c,W,H,tT);
+}
+
+/* ── SSR Canvas キラキラパーティクル ── */
+const ssrP=[];
+let ssrActive=false,ssrRaf=null,ssrT=0;
+
+/* キラキラの色：ゴールド・シアン・ピンク・ホワイト・イエロー */
+const _SP_COLS=[
+  [255,235, 80],[255,255,200],[255,160,220],
+  [130,230,255],[255,200, 50],[255,255,255],
+  [220,170,255],[255,210,120]
+];
+
+function initSSR(){
+  ssrP.length=0;
+  for(let i=0;i<120;i++){
+    const col=_SP_COLS[Math.floor(Math.random()*_SP_COLS.length)];
+    const tier=Math.random();
+    ssrP.push({
+      x:Math.random()*W, y:Math.random()*H,
+      /* 大(10%)・中(30%)・小(60%) でサイズ分布 */
+      r: tier<0.10 ? 5+Math.random()*4          // 大：5〜9px 星
+        : tier<0.40 ? 2.5+Math.random()*2.5     // 中：2.5〜5px
+        :             0.8+Math.random()*1.8,     // 小：0.8〜2.6px
+      col,
+      ph:  Math.random()*Math.PI*2,
+      spd: 0.04+Math.random()*0.08,   // 点滅速度
+      vx:  (Math.random()-.5)*0.25,
+      vy:  (Math.random()-.5)*0.15,
+      rot: Math.random()*Math.PI*2,
+      vrot:(Math.random()-.5)*0.03,
+      big: tier<0.10                  // true = 4点星を描く
+    });
+  }
+}
+
+/* 4点星（キラッ）を描く */
+function drawStar4(c,r){
+  c.beginPath();
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4;
+    const rr=(i%2===0)?r:r*0.28;
+    i===0?c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr)
+         :c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);
+  }
+  c.closePath();
+}
+
+function ssrLoop(){
+  const c=ctxMap['ssr-cv'];if(!c)return;
+  ssrT+=0.022;
+  c.clearRect(0,0,W,H);
+
+  /* 画面中央のふんわりグロー */
+  const glow=c.createRadialGradient(W/2,H*.44,0,W/2,H*.44,Math.max(W,H)*.58);
+  glow.addColorStop(0,`rgba(255,240,180,${0.18+0.07*Math.sin(ssrT*.8)})`);
+  glow.addColorStop(0.55,`rgba(255,210,230,${0.08+0.04*Math.sin(ssrT+1)})`);
+  glow.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle=glow; c.fillRect(0,0,W,H);
+
+  ssrP.forEach(p=>{
+    /* 移動 */
+    p.x+=p.vx; p.y+=p.vy; p.rot+=p.vrot;
+    if(p.x<-10)p.x=W+10; if(p.x>W+10)p.x=-10;
+    if(p.y<-10)p.y=H+10; if(p.y>H+10)p.y=-10;
+
+    /* 点滅（サインカーブ・個別位相） */
+    const alpha=Math.pow(Math.max(0,Math.sin(ssrT*p.spd*28+p.ph)),1.6);
+    if(alpha<0.04)return; // 消えてる間はスキップ
+
+    const [r,g,b]=p.col;
+    c.save();
+    c.translate(p.x,p.y);
+    c.rotate(p.rot);
+    c.globalAlpha=alpha;
+
+    if(p.big){
+      /* 大きい4点星 */
+      c.shadowColor=`rgb(${r},${g},${b})`;
+      c.shadowBlur=p.r*5;
+      /* 外側の星形 */
+      drawStar4(c,p.r);
+      c.fillStyle=`rgba(${r},${g},${b},0.85)`;
+      c.fill();
+      /* 中心の白点 */
+      c.shadowBlur=p.r*3;
+      c.fillStyle='rgba(255,255,255,0.98)';
+      c.beginPath(); c.arc(0,0,p.r*.28,0,Math.PI*2); c.fill();
+      /* 十字の光芒 */
+      c.shadowBlur=p.r*4;
+      c.strokeStyle=`rgba(255,255,255,0.90)`;
+      c.lineWidth=p.r*.22;
+      c.beginPath(); c.moveTo(0,-p.r*1.6); c.lineTo(0,p.r*1.6); c.stroke();
+      c.beginPath(); c.moveTo(-p.r*1.6,0); c.lineTo(p.r*1.6,0); c.stroke();
+    } else {
+      /* 中・小：丸いキラキラ＋グロー */
+      c.shadowColor=`rgb(${r},${g},${b})`;
+      c.shadowBlur=p.r*4;
+      c.fillStyle=`rgba(${r},${g},${b},0.92)`;
+      c.beginPath(); c.arc(0,0,p.r,0,Math.PI*2); c.fill();
+      /* ハイライト */
+      c.shadowBlur=0;
+      c.fillStyle='rgba(255,255,255,0.80)';
+      c.beginPath(); c.arc(-p.r*.28,-p.r*.28,p.r*.35,0,Math.PI*2); c.fill();
+    }
+    c.restore();
+  });
+
+  if(ssrActive)ssrRaf=requestAnimationFrame(ssrLoop);
+}
+
+function startSSR(){
+  ssrActive=true;
+  const cv=document.getElementById('ssr-cv');
+  cv.width=W;cv.height=H;ctxMap['ssr-cv']=cv.getContext('2d');
+  initSSR();
+  ssrLoop();
+}
+function stopSSR(){ssrActive=false;if(ssrRaf)cancelAnimationFrame(ssrRaf);}
+
+/* ══════════════════════════════════════
+   ポップ爆発演出（シングル結果背景）
+══════════════════════════════════════ */
+
+/* 浮遊する星データ */
+const _POP_STARS=[];
+(function(){
+  const cols=['#FFE860','#FFFFFF','#FFD0E8','#A8EEFF','#FFE860','#FFFFFF'];
+  const outlines=['#FFB0C8','#FFD0E0','#FFB8D0','#88CCFF','#FFB0C8','#FFD0E0'];
+  for(let i=0;i<10;i++){
+    const ci=Math.floor(Math.random()*cols.length);
+    _POP_STARS.push({
+      x:Math.random()*W, y:Math.random()*H,
+      r:9+Math.random()*16,
+      col:cols[ci], out:outlines[ci],
+      ph:Math.random()*Math.PI*2,
+      spd:0.006+Math.random()*0.010,
+      rot:Math.random()*Math.PI*2,
+      vrot:(Math.random()-.5)*0.012,
+    });
+  }
+  /* 小さい星・ひし形 */
+  for(let i=0;i<14;i++){
+    _POP_STARS.push({
+      x:Math.random()*W, y:Math.random()*H,
+      r:3+Math.random()*6, small:true,
+      col:cols[Math.floor(Math.random()*cols.length)],
+      ph:Math.random()*Math.PI*2,
+      spd:0.010+Math.random()*0.018,
+      rot:0, vrot:0,
+    });
+  }
+})();
+
+let liveT=0;
+
+/* 5点星を描く */
+function _star5(c,x,y,r,col,out,rot){
+  c.save();c.translate(x,y);c.rotate(rot||0);
+  c.beginPath();
+  for(let i=0;i<10;i++){
+    const a=i*Math.PI/5-Math.PI/2;
+    const rr=i%2===0?r:r*0.40;
+    i===0?c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr):c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);
+  }
+  c.closePath();
+  if(out){c.strokeStyle=out;c.lineWidth=r*0.20;c.lineJoin='round';c.stroke();}
+  c.fillStyle=col;c.fill();
+  c.restore();
+}
+
+function drawLiveSingle(cid){
+  const c=ctxMap[cid];if(!c)return;
+  liveT+=0.016;
+  c.clearRect(0,0,W,H);
+
+  const cx=W/2, cy=H/2;
+  const pulse=1+Math.sin(liveT*1.4)*0.04;
+
+  /* ① 空色ベース */
+  c.fillStyle='#78CEF0';
+  c.fillRect(0,0,W,H);
+
+  /* ② 放射状の光線（24本・ゆっくり回転） */
+  const ROT=liveT*0.035;
+  const RAY_N=24;
+  const RAY_COLS=['#FFF5A8','#FFD8EC','#FFFFFF','#FFE870','#FFBCD8','#FFFFFF','#FFFAC0','#FFE0F0'];
+  c.save();c.translate(cx,cy);c.rotate(ROT);
+  for(let i=0;i<RAY_N;i++){
+    const a0=(i/RAY_N)*Math.PI*2;
+    const a1=((i+0.56)/RAY_N)*Math.PI*2; // 隙間を作る
+    const R=Math.max(W,H)*0.90;
+    c.beginPath();
+    c.moveTo(0,0);
+    c.lineTo(Math.cos(a0)*R,Math.sin(a0)*R);
+    c.lineTo(Math.cos(a1)*R,Math.sin(a1)*R);
+    c.closePath();
+    c.globalAlpha=0.50;
+    c.fillStyle=RAY_COLS[i%RAY_COLS.length];
+    c.fill();
+  }
+  c.restore();c.globalAlpha=1;
+
+  /* ③ 縁のポップなクラウドブロブ（ピンク・黄） */
+  const BLOBS=[
+    {x:W*0.02,y:H*0.72,r:68,col:'#FFB0D4'},{x:W*0.12,y:H*0.92,r:54,col:'#FFC8E0'},
+    {x:W*0.94,y:H*0.78,r:62,col:'#FFB8D8'},{x:W*0.86,y:H*0.95,r:48,col:'#FFC0E4'},
+    {x:W*0.08,y:H*0.08,r:46,col:'#FFE0A0'},{x:W*0.90,y:H*0.10,r:42,col:'#FFE8A8'},
+    {x:W*0.48,y:H*0.02,r:38,col:'#FFC8E8'},{x:W*0.50,y:H*0.98,r:44,col:'#FFD0EC'},
+  ];
+  BLOBS.forEach(b=>{
+    const g=c.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+    g.addColorStop(0,b.col+'EE');g.addColorStop(0.55,b.col+'88');g.addColorStop(1,b.col+'00');
+    c.fillStyle=g;c.beginPath();c.arc(b.x,b.y,b.r,0,Math.PI*2);c.fill();
+  });
+
+  /* ④ 中央の白爆発（もこもこ雲） */
+  const ER=72*pulse;
+  // 外縁のもこもこバンプ
+  const BUMP=9;
+  for(let i=0;i<BUMP;i++){
+    const ba=(i/BUMP)*Math.PI*2+liveT*0.025;
+    const bx=cx+Math.cos(ba)*ER*0.80;
+    const by=cy+Math.sin(ba)*ER*0.80;
+    const br=ER*0.52;
+    const bg=c.createRadialGradient(bx,by,0,bx,by,br);
+    bg.addColorStop(0,'rgba(255,255,255,1)');
+    bg.addColorStop(0.6,'rgba(255,255,255,0.88)');
+    bg.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=bg;c.beginPath();c.arc(bx,by,br,0,Math.PI*2);c.fill();
+  }
+  // 中心の白丸
+  const cg=c.createRadialGradient(cx,cy,0,cx,cy,ER);
+  cg.addColorStop(0,'rgba(255,255,255,1)');
+  cg.addColorStop(0.5,'rgba(255,255,255,0.96)');
+  cg.addColorStop(0.85,'rgba(255,255,255,0.60)');
+  cg.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=cg;c.beginPath();c.arc(cx,cy,ER,0,Math.PI*2);c.fill();
+
+  /* ⑤ 浮遊する星 */
+  _POP_STARS.forEach(s=>{
+    s.rot+=s.vrot;
+    const oy=Math.sin(liveT*s.spd*55+s.ph)*6;
+    const oa=0.80+0.18*Math.sin(liveT*s.spd*40+s.ph);
+    c.globalAlpha=oa;
+    if(s.small){
+      /* 小ひし形 */
+      c.save();c.translate(s.x,s.y+oy);c.rotate(Math.PI/4+liveT*0.02);
+      c.fillStyle=s.col;
+      c.fillRect(-s.r/2,-s.r/2,s.r,s.r);
+      c.restore();
+    } else {
+      _star5(c,s.x,s.y+oy,s.r,s.col,s.out,s.rot);
+    }
+  });
+  c.globalAlpha=1;
+
+  /* ⑥ 音符アイコン */
+  PC_ICONS.forEach(ic=>{
+    ic.ph+=ic.sp;const a=.40+.25*Math.sin(ic.ph);const oy=Math.sin(ic.ph)*7;
+    c.save();c.globalAlpha=a;c.fillStyle=`rgb(${ic.col})`;
+    c.font=`bold ${ic.sz}px sans-serif`;c.textAlign='center';c.textBaseline='middle';
+    c.shadowColor=`rgb(${ic.col})`;c.shadowBlur=10;
+    c.fillText(ic.sym,ic.sx*W,ic.sy*H+oy);c.restore();
+  });
+}
+
+/* ── メインループ ── */
+function mainLoop(){
+  if(cur==='menu') drawMenuBG();
+  else if(cur==='single') drawLiveSingle('single-cv');
+  else if(cur==='ten') drawPopCyber('ten-cv');
+  requestAnimationFrame(mainLoop);
+}
+mainLoop();
+
+/* ── ビデオ制御 ── */
+let pullMode=1;
+let vidResultPending=false;
+const vid=document.getElementById('gacha-video');
+
+function playResult(){
+  if(vidResultPending)return;
+  vidResultPending=true;
+  vid.pause();
+  if(pullMode===1) doSingle();
+  else doTen();
+}
+vid.addEventListener('ended',playResult);
+document.getElementById('s-video').addEventListener('click',playResult);
+
+window.startPull=function(n){
+  pullMode=n;vidResultPending=false;
+  goScreen('video');
+  vid.currentTime=0;
+  vid.play().catch(()=>{ setTimeout(playResult,100); });
+};
+
+/* ── SSR後の遷移先管理 ── */
+let currentSSRCard=null;
+let postSSRScreen='single'; // 'single' or 'ten'
+
+function afterSSR(){
+  stopSSR();
+  if(postSSRScreen==='ten'){
+    goScreen('ten');
+  } else {
+    goScreen('single');
+    const fc=document.getElementById('flip-card');
+    fc.classList.remove('done');void fc.offsetWidth;
+    setTimeout(()=>fc.classList.add('done'),300);
+  }
+}
+window.skipSSR=function(){ afterSSR(); };
+function setSingleCard(card){
+  const face=document.querySelector('.cface');
+  face.className='cface cbg-'+card.rarity.toLowerCase();
+  document.getElementById('cface-img').src=card.img;
+  const rb=document.getElementById('cface-rb');
+  rb.textContent=card.rarity;
+  rb.className='rb rb-'+card.rarity.toLowerCase();
+  const sr=document.getElementById('single-rarity');
+  sr.textContent=card.rarity;
+  sr.className='rar-'+card.rarity.toLowerCase();
+  document.getElementById('single-name').textContent=card.name;
+}
+
+/* ── 1回引く ── */
+function doSingle(){
+  const card=roll1();
+  setSingleCard(card);
+  if(card.rarity==='SSR'){
+    currentSSRCard=card;
+    postSSRScreen='single';
+    showSSR();
+  } else {
+    goScreen('single');
+    const fc=document.getElementById('flip-card');
+    fc.classList.remove('done');void fc.offsetWidth;
+    setTimeout(()=>fc.classList.add('done'),350);
+  }
+}
+
+/* ── 10回引く ── */
+function doTen(){
+  const results=roll10();
+  goScreen('ten');
+  const grid=document.getElementById('ten-grid');grid.innerHTML='';
+  const ssrCard=results.find(c=>c.rarity==='SSR');
+  document.getElementById('ssr-see-btn').style.display='none';
+  results.forEach((card,i)=>{
+    const el=document.createElement('div');
+    el.className='tcard cbg-'+card.rarity.toLowerCase()+(card.rarity==='SSR'?' tssr':'');
+    el.innerHTML=`<img src="${card.img}" alt="${card.rarity}"><span class="rb rb-${card.rarity.toLowerCase()}">${card.rarity}</span>`;
+    grid.appendChild(el);
+    setTimeout(()=>el.classList.add('shown'),160+i*120);
+  });
+  if(ssrCard){
+    currentSSRCard=ssrCard;
+    setSingleCard(ssrCard);
+    postSSRScreen='ten';
+    setTimeout(showSSR,160+10*120+600);
+  }
+}
+
+/* ── SSR演出 → フリップカード画面へ ── */
+window.showSSR=function(){
+  const body=document.getElementById('ssr-body');
+  const flash=document.getElementById('ssr-flash');
+  if(currentSSRCard){
+    document.getElementById('ssr-img').src=currentSSRCard.img;
+    document.getElementById('ssr-char').textContent=currentSSRCard.name;
+    document.getElementById('ssr-title').textContent='[ SSR ]';
+  }
+  const btns=document.getElementById('ssr-btns');
+  body.classList.remove('reveal');btns.classList.remove('reveal');void body.offsetWidth;
+  goScreen('ssr');startSSR();
+  flash.classList.add('on');
+  setTimeout(()=>flash.classList.remove('on'),160);
+  setTimeout(()=>{body.classList.add('reveal');btns.classList.add('reveal');},280);
+  setTimeout(()=>afterSSR(),3500);
+};
+
+/* ── 10枚グリッドをクリックでガチャメニューへ ── */
+document.getElementById('s-ten').addEventListener('click',function(e){
+  if(e.target.closest('button')||e.target.closest('a'))return;
+  goMenu();
+});
+
+})();
+</script>
+</body>
+</html>

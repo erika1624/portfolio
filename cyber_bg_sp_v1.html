@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cyber Pop BG — Landscape SP</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{width:100vw;height:100vh;display:flex;align-items:flex-start;justify-content:center;background:#000;overflow:hidden;}
+body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;position:relative;background:#fff;}
+canvas{
+  display:block;
+  /* 844:390 アスペクト比を維持しながら画面いっぱいに */
+  width:100vw;
+  height:calc(100vw * 390 / 844);
+  max-height:100vh;
+  max-width:calc(100vh * 844 / 390);
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<script>
+/* ════════════════════════════════════════════════════════
+   CYBER POP BG — 横型スマホサイズ (844 × 390)
+   白ベース × パステルひし形 × ネオン × ホログラム
+════════════════════════════════════════════════════════ */
+const cv = document.getElementById('bg');
+const ctx = cv.getContext('2d');
+const W = 844, H = 390;
+cv.width = W; cv.height = H;
+
+/* ── パレット ── */
+const PCOLS = [
+  [255, 178, 212],  // pink
+  [162, 213, 255],  // blue
+  [255, 236, 135],  // yellow
+  [212, 188, 255],  // lavender
+  [170, 244, 228],  // mint
+];
+
+/* ── 静的グリッドシード（ひし形配色マップ） ── */
+const GR = 11, GC = 22;
+const GRID = (() => {
+  const g = [];
+  for (let r = 0; r < GR; r++) {
+    g[r] = [];
+    for (let c = 0; c < GC; c++) {
+      const s = (r * 41 + c * 29 + r * c * 11 + 13) % 36;
+      if      (s <  5) g[r][c] = -1;  // 空（輪郭のみ）
+      else if (s < 12) g[r][c] =  0;  // pink
+      else if (s < 20) g[r][c] =  1;  // blue
+      else if (s < 24) g[r][c] =  2;  // yellow
+      else if (s < 30) g[r][c] =  3;  // lavender
+      else             g[r][c] =  4;  // mint
+    }
+  }
+  return g;
+})();
+
+/* ── スパークルシード ── */
+const rng = (a, b) => a + Math.random() * (b - a);
+const SPARKS = Array.from({length: 30}, () => ({
+  x:  rng(0, W), y: rng(0, H),
+  sz: rng(2, 9), ph: rng(0, Math.PI * 2),
+  sp: rng(0.007, 0.024),
+  col: PCOLS[Math.floor(Math.random() * 3)],
+}));
+
+/* ── イエローパーティクル ── */
+const YPARTS = Array.from({length: 22}, () => ({
+  ox: rng(0.04, 0.96), oy: Math.random(),
+  sp: rng(0.10, 0.42), ph: rng(0, Math.PI * 2),
+  r:  rng(0.7, 2.2), sq: Math.random() < 0.5,
+}));
+
+/* ── レインボー色列 ── */
+const RAINBOW = [
+  [255,  95, 182],  // vivid pink
+  [228,  95, 255],  // violet
+  [138, 108, 255],  // indigo
+  [ 98, 178, 255],  // sky
+  [ 98, 242, 212],  // cyan
+  [152, 255, 128],  // lime
+  [255, 242,  95],  // yellow
+  [255, 172,  75],  // orange
+];
+
+/* ════ 1. ベース ════ */
+function drawBase() {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // 対角グラデーション（左上ピンク→右下ブルー）
+  const dg = ctx.createLinearGradient(0, 0, W, H);
+  dg.addColorStop(0,   'rgba(255,226,240,0.25)');
+  dg.addColorStop(0.5, 'rgba(255,255,255,0.00)');
+  dg.addColorStop(1,   'rgba(212,236,255,0.25)');
+  ctx.fillStyle = dg; ctx.fillRect(0, 0, W, H);
+
+  // 右側ティールゾーン
+  const tg = ctx.createRadialGradient(W*0.82, H*0.45, 0, W*0.82, H*0.45, W*0.42);
+  tg.addColorStop(0,   'rgba(160,238,225,0.38)');
+  tg.addColorStop(0.5, 'rgba(182,240,230,0.20)');
+  tg.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, H);
+
+  // 左上ピンクハロー
+  const pg = ctx.createRadialGradient(W*0.06, H*0.08, 0, W*0.06, H*0.08, W*0.32);
+  pg.addColorStop(0,   'rgba(255,198,228,0.28)');
+  pg.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = pg; ctx.fillRect(0, 0, W, H);
+}
+
+/* ════ 2. ドット格子（ティールゾーン）════ */
+function drawDotPattern() {
+  ctx.save();
+  const sp = 18, dr = 2.2;
+  for (let x = W * 0.40; x < W + sp; x += sp) {
+    for (let y = 0; y < H + sp; y += sp) {
+      const off = (Math.floor(y / sp) % 2 === 0) ? 0 : sp / 2;
+      const rx = x + off; if (rx > W + 2) continue;
+      const dx = rx/W - 0.82, dy = y/H - 0.45;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const a = Math.max(0, 0.24 - dist * 0.52);
+      if (a < 0.01) continue;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(72,200,185,1)';
+      ctx.beginPath();
+      ctx.arc(rx, y, dr * (1 - dist * 0.35), 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+/* ════ 3. 放射ネオンライン ════ */
+function drawNeonLines(t) {
+  const VX = W*0.50, VY = H*0.18;
+  const defs = [
+    [255,138,198],[140,192,255],[255,232,118],[198,168,255],
+    [98,232,212],[255,138,198],[140,192,255],[255,232,118],
+    [198,168,255],[98,232,212],[255,138,198],[140,192,255],
+  ];
+  defs.forEach(([R,G,B], i) => {
+    const ang = ((i / defs.length) * Math.PI * 0.92) - Math.PI * 0.46;
+    const x2 = VX + Math.cos(ang) * W * 1.2;
+    const y2 = VY + Math.sin(ang) * H * 1.2;
+    const a = (0.065 + 0.028*Math.sin(t*0.8+i*0.52));
+    const gr = ctx.createLinearGradient(VX, VY, x2, y2);
+    gr.addColorStop(0,    `rgba(${R},${G},${B},0)`);
+    gr.addColorStop(0.18, `rgba(${R},${G},${B},${a})`);
+    gr.addColorStop(0.70, `rgba(${R},${G},${B},${a*0.35})`);
+    gr.addColorStop(1,    `rgba(${R},${G},${B},0)`);
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(VX,VY); ctx.lineTo(x2,y2);
+    ctx.strokeStyle = gr; ctx.lineWidth = 1.0;
+    ctx.shadowBlur = 5; ctx.shadowColor = `rgba(${R},${G},${B},0.5)`;
+    ctx.stroke(); ctx.shadowBlur = 0; ctx.restore();
+  });
+}
+
+/* ════ 4. パースペクティブひし形グリッド ════ */
+function drawDiamonds() {
+  const VY = H * 0.20;
+
+  for (let r = 0; r < GR; r++) {
+    const t0 = r/GR, t1 = (r+1)/GR;
+    const yFar  = VY + (H - VY) * Math.pow(t0, 0.60);
+    const yNear = VY + (H - VY) * Math.pow(t1, 0.60);
+    const rowH = yNear - yFar;
+    const cy   = (yFar + yNear) / 2;
+
+    const nearness = Math.pow(t1, 0.82);
+    const rowW = W * 1.50 * nearness;
+    const xOff = (W - rowW) / 2;
+    const cellW = rowW / GC;
+    const dw = cellW * 0.27;   // 横幅（細め ＝「針」）
+    const dh = rowH * 0.92;    // 縦幅
+    const alpha = Math.pow(nearness, 1.15) * 0.88;
+    if (alpha < 0.018) continue;
+
+    for (let c = 0; c < GC; c++) {
+      const cIdx = GRID[r][c];
+      const cx = xOff + cellW * (c + 0.5);
+      const yo = (c % 2 === 0) ? 0 : rowH * 0.44;
+      const acy = cy + yo;
+
+      ctx.save();
+
+      if (cIdx === -1) {
+        /* 空マス：ホログラムアウトライン */
+        if (nearness > 0.32) {
+          ctx.globalAlpha = alpha * 0.26;
+          ctx.strokeStyle = 'rgba(198,212,255,1)';
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(cx, acy-dh/2); ctx.lineTo(cx+dw/2, acy);
+          ctx.lineTo(cx, acy+dh/2); ctx.lineTo(cx-dw/2, acy);
+          ctx.closePath(); ctx.stroke();
+        }
+        ctx.restore(); continue;
+      }
+
+      const [R,G,B] = PCOLS[cIdx];
+
+      /* ネオングロー */
+      if (nearness > 0.52) {
+        ctx.shadowBlur = 12 * nearness;
+        ctx.shadowColor = `rgba(${R},${G},${B},0.72)`;
+      }
+      ctx.globalAlpha = alpha;
+
+      /* ホログラムグラデーション塗り */
+      const gf = ctx.createLinearGradient(cx-dw/2, acy-dh/2, cx+dw/2, acy+dh/2);
+      gf.addColorStop(0,    `rgba(255,255,255,0.82)`);
+      gf.addColorStop(0.28, `rgba(${R},${G},${B},0.88)`);
+      gf.addColorStop(0.55, `rgba(${Math.min(R+32,255)},${Math.min(G+24,255)},${Math.min(B+32,255)},0.78)`);
+      gf.addColorStop(0.82, `rgba(${R},${G},${B},0.72)`);
+      gf.addColorStop(1,    `rgba(255,255,255,0.58)`);
+      ctx.beginPath();
+      ctx.moveTo(cx, acy-dh/2); ctx.lineTo(cx+dw/2, acy);
+      ctx.lineTo(cx, acy+dh/2); ctx.lineTo(cx-dw/2, acy);
+      ctx.closePath();
+      ctx.fillStyle = gf; ctx.fill();
+
+      /* ハイライトアウトライン */
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = alpha * 0.62;
+      ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      /* 色収差（近景のみ） */
+      if (r > GR * 0.68) {
+        const ca = alpha * 0.20;
+        ctx.lineWidth = 1.0; ctx.globalAlpha = ca;
+        ctx.strokeStyle = 'rgba(255,98,208,1)';
+        ctx.beginPath();
+        ctx.moveTo(cx-1,acy-dh/2-1); ctx.lineTo(cx+dw/2+1,acy);
+        ctx.lineTo(cx-1,acy+dh/2+1); ctx.lineTo(cx-dw/2-1,acy);
+        ctx.closePath(); ctx.stroke();
+        ctx.strokeStyle = 'rgba(98,192,255,1)';
+        ctx.beginPath();
+        ctx.moveTo(cx+1,acy-dh/2+1); ctx.lineTo(cx+dw/2,acy+1);
+        ctx.lineTo(cx+1,acy+dh/2-1); ctx.lineTo(cx-dw/2,acy+1);
+        ctx.closePath(); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+}
+
+/* ════ 5. ホライズンフェード ════ */
+function drawHorizonFade() {
+  const hf = ctx.createLinearGradient(0, 0, 0, H*0.52);
+  hf.addColorStop(0,   'rgba(255,255,255,0.96)');
+  hf.addColorStop(0.58,'rgba(255,255,255,0.38)');
+  hf.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.fillStyle = hf; ctx.fillRect(0, 0, W, H*0.52);
+}
+
+/* ════ 6. レインボーリング — Glossy × Cyber Glitch ════ */
+
+/* グリッチ用ノイズシード */
+const _GS = Array.from({length:32}, (_,i)=>({
+  ph: Math.random()*Math.PI*2, sp: 0.8+Math.random()*2.2,
+  yr: Math.random(), xd: (Math.random()-.5)*18,
+  h:  2+Math.random()*4, ci: Math.floor(Math.random()*8),
+}));
+/* データパーティクルシード */
+const _DP = Array.from({length:24}, (_,i)=>({
+  a: (i/24)*Math.PI*2, da: (Math.random()-.5)*.008,
+  rf: Math.random(), ph: Math.random()*Math.PI*2,
+  sp: 0.04+Math.random()*.08, sz: .8+Math.random()*2.0,
+  ci: Math.floor(Math.random()*8),
+}));
+
+function drawRainbowRing(t) {
+  const cx=W/2, cy=H/2;
+  const ROUT=555, RIN=458, RMD=(555+458)/2;
+  const NSEG=48, SPD=0.10, TILT=0.40, ANGLE=0.22;
+
+  /* ── グリッチ強度（不規則パルス）── */
+  const gRaw = Math.sin(t*3.1)*Math.cos(t*2.0)*Math.sin(t*5.7);
+  const glitch = Math.max(0, gRaw - 0.62) / 0.38; // 0〜1, 数秒に1回スパイク
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(ANGLE);
+  ctx.scale(1, TILT);
+  ctx.rotate(t * SPD);
+
+  /* ══ LAYER 1: RGBカラー収差（常時・微細） ══ */
+  const ab = 2.0 + glitch * 9;
+  [{dx:-ab,dy:0,col:`rgba(255,30,30,0.10)`},{dx:ab,dy:0,col:`rgba(30,30,255,0.10)`}]
+  .forEach(({dx,col})=>{
+    ctx.save(); ctx.translate(dx,0);
+    for(let i=0;i<NSEG;i++){
+      const a0=(i/NSEG)*Math.PI*2, a1=((i+1.03)/NSEG)*Math.PI*2;
+      ctx.beginPath(); ctx.arc(0,0,ROUT,a0,a1); ctx.arc(0,0,RIN,a1,a0,true); ctx.closePath();
+      ctx.fillStyle=col; ctx.fill();
+    }
+    ctx.restore();
+  });
+
+  /* ══ LAYER 2: メイン虹リング（滑らかグラデーション）══ */
+  for(let i=0;i<NSEG;i++){
+    const a0=(i/NSEG)*Math.PI*2, a1=((i+1.03)/NSEG)*Math.PI*2;
+    const frac=(i/NSEG)*RAINBOW.length;
+    const ci0=Math.floor(frac)%RAINBOW.length, ci1=(ci0+1)%RAINBOW.length;
+    const bl=frac-Math.floor(frac);
+    const [R0,G0,B0]=RAINBOW[ci0],[R1,G1,B1]=RAINBOW[ci1];
+    const R=Math.round(R0+(R1-R0)*bl), G=Math.round(G0+(G1-G0)*bl), B=Math.round(B0+(B1-B0)*bl);
+    ctx.beginPath(); ctx.arc(0,0,ROUT,a0,a1); ctx.arc(0,0,RIN,a1,a0,true); ctx.closePath();
+    ctx.fillStyle=`rgba(${R},${G},${B},0.84)`;
+    ctx.shadowBlur=18; ctx.shadowColor=`rgba(${R},${G},${B},0.50)`;
+    ctx.fill(); ctx.shadowBlur=0;
+  }
+
+  /* ── リング域をクリップして内部エフェクトを描画 ── */
+  ctx.save();
+  ctx.beginPath(); ctx.arc(0,0,ROUT+1,0,Math.PI*2); ctx.arc(0,0,RIN-1,0,Math.PI*2,true); ctx.clip();
+
+  /* ══ LAYER 3: Glossy — 凸面体グラデーション（プラスチック感）══ */
+  const dg = ctx.createRadialGradient(0,0,RIN,0,0,ROUT);
+  dg.addColorStop(0,    'rgba(0,0,0,0.28)');    // 内縁：影
+  dg.addColorStop(0.12, 'rgba(0,0,0,0.10)');
+  dg.addColorStop(0.38, 'rgba(255,255,255,0.08)');
+  dg.addColorStop(0.55, 'rgba(255,255,255,0.22)'); // ハイライト帯
+  dg.addColorStop(0.75, 'rgba(255,255,255,0.06)');
+  dg.addColorStop(1,    'rgba(255,255,255,0.32)'); // 外縁：エッジ反射
+  ctx.fillStyle=dg; ctx.fillRect(-ROUT-2,-ROUT-2,(ROUT+2)*2,(ROUT+2)*2);
+
+  /* ══ LAYER 4: Cyber — スキャンライン（電子的テクスチャ）══ */
+  const scanAlpha = 0.09 + 0.04*Math.sin(t*2.6);
+  ctx.globalAlpha = scanAlpha;
+  ctx.strokeStyle = 'rgba(0,0,30,1)';
+  ctx.lineWidth = 0.7;
+  for(let y=-ROUT; y<ROUT; y+=5){
+    ctx.beginPath(); ctx.moveTo(-ROUT,y); ctx.lineTo(ROUT,y); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  /* ══ LAYER 5: Cyber — データパーティクル（リング上の粒子）══ */
+  _DP.forEach(p=>{
+    p.a += p.da; p.ph += p.sp;
+    const pr = RIN + (ROUT-RIN)*p.rf;
+    const px = Math.cos(p.a)*pr, py = Math.sin(p.a)*pr;
+    const fa = (0.35+0.65*Math.abs(Math.sin(p.ph))) * (0.55 + glitch*0.45);
+    ctx.save();
+    ctx.globalAlpha = fa;
+    ctx.shadowBlur=5; ctx.shadowColor='rgba(255,255,255,1)';
+    ctx.fillStyle='rgba(255,255,255,0.95)';
+    ctx.fillRect(px-p.sz,py-p.sz,p.sz*2,p.sz*2);
+    /* カラーの縦棒（断片データ感）*/
+    if(p.ci%3===0){
+      const [CR,CG,CB]=RAINBOW[p.ci%RAINBOW.length];
+      ctx.fillStyle=`rgba(${CR},${CG},${CB},0.75)`;
+      ctx.fillRect(px-p.sz*.6, py-p.sz*2.8, p.sz*1.2, p.sz*2.8);
+    }
+    ctx.restore();
+  });
+
+  /* ══ LAYER 6: Glitch — 水平スライス歪み（不規則バースト）══ */
+  if(glitch > 0.08){
+    const nS = Math.ceil(glitch*4);
+    for(let g=0; g<nS; g++){
+      const gy = Math.sin(t*18.3+g*4.7)*ROUT;
+      const gh = 2.5+Math.sin(t*25.1+g*3.2)*2;
+      const gx = Math.sin(t*9.7+g*2.9) * 14 * glitch;
+      const [GR,GG,GB]=RAINBOW[Math.floor(Math.abs(t*6.1+g))%RAINBOW.length];
+      ctx.save();
+      ctx.translate(gx,0);
+      ctx.globalAlpha = 0.50*glitch;
+      ctx.fillStyle=`rgba(255,255,255,0.90)`; ctx.fillRect(-ROUT,gy,ROUT*2,gh);
+      ctx.globalAlpha = 0.60*glitch;
+      ctx.fillStyle=`rgba(${GR},${GG},${GB},0.85)`; ctx.fillRect(-ROUT,gy+gh*.55,ROUT*2,gh*.5);
+      ctx.restore();
+    }
+  }
+
+  ctx.restore(); // クリップ解除
+
+  /* ══ LAYER 7: Glossy — 移動する鏡面ハイライト ══ */
+  const shA = t * 0.22;  // ゆっくり周回する鏡面
+  const shW = 0.72;
+  /* メイン反射スポット */
+  const sg1 = ctx.createRadialGradient(0,0,RIN,0,0,ROUT);
+  sg1.addColorStop(0,   'rgba(255,255,255,0.00)');
+  sg1.addColorStop(0.15,'rgba(255,255,255,0.12)');
+  sg1.addColorStop(0.42,'rgba(255,255,255,0.62)'); // 光の中心
+  sg1.addColorStop(0.72,'rgba(255,255,255,0.22)');
+  sg1.addColorStop(1,   'rgba(255,255,255,0.00)');
+  ctx.beginPath();
+  ctx.arc(0,0,ROUT,shA-shW/2,shA+shW/2); ctx.arc(0,0,RIN,shA+shW/2,shA-shW/2,true); ctx.closePath();
+  ctx.fillStyle=sg1; ctx.fill();
+  /* 補助反射（逆側・薄め）*/
+  const sg2 = ctx.createRadialGradient(0,0,RIN,0,0,ROUT);
+  sg2.addColorStop(0,   'rgba(255,255,255,0.00)');
+  sg2.addColorStop(0.3, 'rgba(255,255,255,0.08)');
+  sg2.addColorStop(0.6, 'rgba(255,255,255,0.22)');
+  sg2.addColorStop(1,   'rgba(255,255,255,0.00)');
+  const sh2=shA+Math.PI, sw2=0.42;
+  ctx.beginPath();
+  ctx.arc(0,0,ROUT,sh2-sw2,sh2+sw2); ctx.arc(0,0,RIN,sh2+sw2,sh2-sw2,true); ctx.closePath();
+  ctx.fillStyle=sg2; ctx.fill();
+
+  /* ══ LAYER 8: Glossy — 鋭いエッジハイライト（ガラス縁）══ */
+  ctx.shadowBlur=22; ctx.shadowColor='rgba(255,255,255,0.95)';
+  ctx.strokeStyle='rgba(255,255,255,0.88)'; ctx.lineWidth=2.8;
+  ctx.beginPath(); ctx.arc(0,0,ROUT-1,0,Math.PI*2); ctx.stroke();
+  ctx.shadowBlur=10; ctx.strokeStyle='rgba(255,255,255,0.50)'; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.arc(0,0,RIN+1,0,Math.PI*2); ctx.stroke();
+  /* 極細スペキュラーライン（プラスチック縁） */
+  ctx.shadowBlur=6; ctx.strokeStyle='rgba(255,255,255,0.30)'; ctx.lineWidth=0.7;
+  ctx.beginPath(); ctx.arc(0,0,ROUT-8,0,Math.PI*2); ctx.stroke();
+  ctx.shadowBlur=0;
+
+  ctx.restore();
+}
+
+/* ════ 7. スパークル ════ */
+function drawSparkles() {
+  SPARKS.forEach(sp => {
+    sp.ph += sp.sp;
+    const a  = 0.32 + 0.68 * Math.abs(Math.sin(sp.ph));
+    const sz = sp.sz * (0.62 + 0.38 * Math.abs(Math.sin(sp.ph)));
+    const [R,G,B] = sp.col;
+    ctx.save();
+    ctx.globalAlpha = a * 0.88;
+    ctx.translate(sp.x, sp.y);
+    ctx.shadowBlur = sz * 3.5;
+    ctx.shadowColor = `rgba(${R},${G},${B},0.85)`;
+    ctx.strokeStyle = `rgba(${R},${G},${B},1)`;
+    ctx.lineWidth = 1.0;
+    /* 縦横クロス */
+    ctx.beginPath();
+    ctx.moveTo(0,-sz); ctx.lineTo(0,sz);
+    ctx.moveTo(-sz,0); ctx.lineTo(sz,0);
+    ctx.stroke();
+    /* 斜め（短め） */
+    ctx.shadowBlur = sz*2; ctx.globalAlpha = a*0.50;
+    const ds = sz * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(-ds,-ds); ctx.lineTo(ds,ds);
+    ctx.moveTo(ds,-ds);  ctx.lineTo(-ds,ds);
+    ctx.stroke();
+    /* 中心ドット */
+    ctx.shadowBlur = sz*2.5; ctx.globalAlpha = a;
+    ctx.fillStyle = 'rgba(255,255,255,1)';
+    ctx.beginPath(); ctx.arc(0,0,sz*0.13,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+}
+
+/* ════ 8. イエロー浮遊パーティクル ════ */
+function drawYellowParticles(t) {
+  YPARTS.forEach(p => {
+    const yy = ((p.oy*H - t*p.sp*52) % H + H) % H;
+    const a = (0.40 + 0.30*Math.sin(t*1.6+p.ph)) * (yy/H);
+    if (a < 0.04) return;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowBlur = 7; ctx.shadowColor = 'rgba(255,215,0,0.90)';
+    ctx.fillStyle = 'rgba(255,226,58,1)';
+    if (p.sq) {
+      ctx.translate(p.ox*W, yy); ctx.rotate(Math.PI/4);
+      ctx.fillRect(-p.r,-p.r,p.r*2,p.r*2);
+    } else {
+      ctx.beginPath(); ctx.arc(p.ox*W, yy, p.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+/* ════ 9. 大型装飾ひし形（アウトライン） ════ */
+function drawBigDiamonds(t) {
+  const defs = [
+    {cx:W*0.90, cy:H*0.22, w:32, h:78,  col:[162,213,255], a:0.24, rot: 0.08},
+    {cx:W*0.08, cy:H*0.72, w:26, h:62,  col:[255,178,212], a:0.20, rot:-0.06},
+    {cx:W*0.80, cy:H*0.82, w:22, h:52,  col:[255,236,135], a:0.22, rot: 0.12},
+    {cx:W*0.94, cy:H*0.58, w:18, h:42,  col:[212,188,255], a:0.18, rot: 0.04},
+    {cx:W*0.04, cy:H*0.38, w:16, h:38,  col:[170,244,228], a:0.18, rot:-0.10},
+    {cx:W*0.52, cy:H*0.06, w:14, h:32,  col:[255,178,212], a:0.15, rot: 0.05},
+    {cx:W*0.35, cy:H*0.90, w:12, h:28,  col:[162,213,255], a:0.15, rot:-0.04},
+  ];
+  defs.forEach((d,i) => {
+    const [R,G,B] = d.col;
+    const pulse = 0.75 + 0.25*Math.sin(t*0.55+i*1.05);
+    ctx.save();
+    ctx.translate(d.cx, d.cy);
+    ctx.rotate(d.rot + Math.sin(t*0.20+i)*0.018);
+    ctx.globalAlpha = d.a * pulse;
+    ctx.shadowBlur = 12; ctx.shadowColor = `rgba(${R},${G},${B},0.60)`;
+    ctx.strokeStyle = `rgba(${R},${G},${B},1)`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0,-d.h/2); ctx.lineTo(d.w/2,0);
+    ctx.lineTo(0,d.h/2);  ctx.lineTo(-d.w/2,0);
+    ctx.closePath(); ctx.stroke();
+    ctx.globalAlpha = d.a * pulse * 0.28;
+    ctx.fillStyle = `rgba(${R},${G},${B},1)`;
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+/* ════ 10. ホログラム虹色シマー ════ */
+function drawShimmer(t) {
+  const hue = (t * 18) % 360;
+  const sh = ctx.createLinearGradient(0, 0, W, H);
+  sh.addColorStop(0,    `hsla(${hue},     88%, 78%, 0.038)`);
+  sh.addColorStop(0.30, `hsla(${hue+110}, 88%, 78%, 0.025)`);
+  sh.addColorStop(0.65, `hsla(${hue+220}, 88%, 78%, 0.032)`);
+  sh.addColorStop(1,    `hsla(${hue+330}, 88%, 78%, 0.025)`);
+  ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
+}
+
+/* ════ 11. エッジフレームグロー ════ */
+function drawFrameGlow(t) {
+  const pulse = 0.85 + 0.15*Math.sin(t*0.45);
+  const re = ctx.createLinearGradient(W-55,0,W,0);
+  re.addColorStop(0,'rgba(255,255,255,0)');
+  re.addColorStop(1,`rgba(158,238,225,${0.28*pulse})`);
+  ctx.fillStyle = re; ctx.fillRect(W-55,0,55,H);
+  const be = ctx.createLinearGradient(0,H-42,0,H);
+  be.addColorStop(0,'rgba(255,255,255,0)');
+  be.addColorStop(1,`rgba(255,198,226,${0.20*pulse})`);
+  ctx.fillStyle = be; ctx.fillRect(0,H-42,W,42);
+}
+
+/* ════ メインループ ════ */
+function render(ts) {
+  const t = ts * 0.001;
+  ctx.clearRect(0, 0, W, H);
+
+  drawBase();
+  drawDotPattern();
+  drawNeonLines(t);
+  drawDiamonds();
+  drawBigDiamonds(t);
+  drawHorizonFade();
+  drawYellowParticles(t);
+  drawRainbowRing(t);
+  drawSparkles();
+  drawShimmer(t);
+  drawFrameGlow(t);
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

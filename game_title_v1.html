@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEON BEAT</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{width:100vw;height:100vh;display:flex;align-items:flex-start;justify-content:center;background:#000;overflow:hidden;}
+body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;position:relative;background:linear-gradient(135deg,#fce8f8 0%,#e8f4ff 45%,#f8fff0 75%,#fff6e8 100%);font-family:'Orbitron',monospace;}
+/* ── デコ丸（ポートフォリオ背景スタイル） ── */
+.deco{display:none!important;}
+.deco.d1{width:56px;height:56px;border:2px solid rgba(255,150,220,.55);top:7%;right:4%;}
+.deco.d2{width:30px;height:30px;border:2px solid rgba(80,200,255,.55);top:20%;left:3%;animation-delay:.8s;opacity:.7;}
+.deco.d3{width:22px;height:22px;border:2px solid rgba(255,220,60,.55);bottom:20%;right:7%;animation-delay:.4s;opacity:.7;}
+.deco.d4{width:40px;height:40px;border:1.5px solid rgba(200,150,255,.50);bottom:9%;left:4%;animation-delay:1.2s;opacity:.5;}
+.deco.d5{width:18px;height:18px;border:1.5px solid rgba(80,220,200,.50);top:55%;left:38%;animation-delay:2s;opacity:.45;}
+@keyframes decoFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+#gc{position:absolute;top:0;left:0;width:100%;height:100%;display:block;z-index:0;}
+/* ── 前景canvas（LIZの前、z:7） ── */
+#gc-front{position:absolute;top:0;left:0;width:100%;height:100%;display:block;z-index:7;pointer-events:none;}
+
+/* ── TAP TO START 水平ビーム（z:9） ── */
+.tap-beam{
+  position:absolute;bottom:24px;left:0;width:100%;height:50px;
+  z-index:9;pointer-events:none;
+  background:linear-gradient(90deg,
+    transparent 0%,rgba(0,255,210,.05) 18%,
+    rgba(255,255,255,.13) 50%,
+    rgba(255,90,180,.05) 82%,transparent 100%);
+  animation:beamPulse 1.2s ease-in-out infinite;
+}
+@keyframes beamPulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+.tap-beam::after{
+  content:'';position:absolute;top:50%;left:8%;
+  width:84%;height:1px;transform:translateY(-50%);
+  background:linear-gradient(90deg,
+    transparent,rgba(255,255,255,.20),rgba(0,255,210,.40),
+    rgba(255,255,255,.20),transparent);
+}
+
+/* ── LIZ character (black bg → mix-blend-mode:screen で黒を透明化) ── */
+.liz-wrap{
+  position:absolute;
+  left:50%;bottom:0;
+  transform:translateX(-50%);
+  height:94%;width:auto;
+  z-index:6;pointer-events:none;
+  animation:lizBob 3.4s ease-in-out infinite;
+}
+.liz-img{
+  height:100%;width:auto;object-fit:contain;
+  mix-blend-mode:normal;
+  /* Stage light glow */
+  filter:
+    drop-shadow(0 0 16px rgba(255,90,180,.60))
+    drop-shadow(0 0 35px rgba(0,220,200,.40))
+    drop-shadow(0 0 55px rgba(200,100,255,.25));
+  animation:lizGlow 2.6s ease-in-out infinite;
+}
+@keyframes lizGlow{
+  0%,100%{filter:
+    drop-shadow(0 0 14px rgba(255,90,180,.55))
+    drop-shadow(0 0 30px rgba(0,220,200,.35));}
+  50%{filter:
+    drop-shadow(0 0 22px rgba(255,90,180,.80))
+    drop-shadow(0 0 44px rgba(0,220,200,.55))
+    drop-shadow(0 0 65px rgba(0,200,200,.28));}
+}
+@keyframes lizBob{
+  0%,100%{transform:translateX(-50%) translateY(0);}
+  50%{transform:translateX(-50%) translateY(-9px);}
+}
+
+/* ── Logo shared style ── */
+.logo-back,
+.logo-front-l,
+.logo-front-r{
+  position:absolute;top:14px;left:50%;
+  transform:translateX(-50%);
+  text-align:center;white-space:nowrap;
+  pointer-events:none;
+}
+
+/* Behind LIZ */
+.logo-back{ z-index:2; }
+
+/* サイバーノイズ：N/T エリアのグリッチ装飾（それぞれ元のclip-pathを保持） */
+@keyframes logoNoiseL{
+  0%,86%,100%{transform:none;clip-path:inset(0 calc(100% - 52px) 0 0);filter:none;}
+  87%{transform:skewX(3deg) translateX(-2px);clip-path:inset(20% calc(100% - 52px) 70% 0);filter:brightness(1.5);}
+  88%{transform:skewX(-2deg) translateX(2px);clip-path:inset(65% calc(100% - 52px) 15% 0);filter:hue-rotate(18deg);}
+  89%{transform:none;clip-path:inset(0 calc(100% - 52px) 0 0);filter:none;}
+  90%{clip-path:inset(35% calc(100% - 52px) 52% 0);filter:brightness(1.3);}
+  91%{clip-path:inset(0 calc(100% - 52px) 0 0);filter:none;}
+}
+@keyframes logoNoiseR{
+  0%,86%,100%{transform:none;clip-path:inset(0 0 0 calc(100% - 48px));filter:none;}
+  87%{transform:skewX(3deg) translateX(-2px);clip-path:inset(20% 0 70% calc(100% - 48px));filter:brightness(1.5);}
+  88%{transform:skewX(-2deg) translateX(2px);clip-path:inset(65% 0 15% calc(100% - 48px));filter:hue-rotate(18deg);}
+  89%{transform:none;clip-path:inset(0 0 0 calc(100% - 48px));filter:none;}
+  90%{clip-path:inset(35% 0 52% calc(100% - 48px));filter:brightness(1.3);}
+  91%{clip-path:inset(0 0 0 calc(100% - 48px));filter:none;}
+}
+.logo-front-l{
+  z-index:8;
+  animation:logoNoiseL 6s ease-in-out infinite;
+}
+.logo-front-r{
+  z-index:8;
+  animation:logoNoiseR 6s ease-in-out infinite .4s;
+}
+
+/* Logo text elements */
+.logo-eyebrow{
+  font-family:'Share Tech Mono',monospace;font-size:7.5px;
+  letter-spacing:.55em;color:rgba(0,230,200,.65);
+  display:block;margin-bottom:3px;
+  animation:eyeBlink 4s ease-in-out infinite;
+}
+@keyframes eyeBlink{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+.logo-main{
+  font-family:'Orbitron',monospace;font-size:52px;font-weight:900;
+  letter-spacing:.1em;line-height:1;display:block;
+  background:linear-gradient(110deg,
+    #00ffd0 0%,#7affee 14%,#ccfffa 28%,
+    #ffffff 42%,
+    #ffcce8 58%,#ff5db8 76%,#ff88cc 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:
+    drop-shadow(0 0 6px rgba(0,255,210,.75))
+    drop-shadow(0 0 16px rgba(255,90,180,.55));
+  animation:logoGlow 2.8s ease-in-out infinite;
+}
+@keyframes logoGlow{
+  0%,100%{filter:
+    drop-shadow(0 0 5px rgba(0,255,210,.70))
+    drop-shadow(0 0 14px rgba(255,90,180,.50));}
+  50%{filter:
+    drop-shadow(0 0 9px rgba(0,255,210,.95))
+    drop-shadow(0 0 24px rgba(255,90,180,.80))
+    drop-shadow(0 0 42px rgba(0,200,255,.40));}
+}
+.logo-divider{
+  display:block;width:100%;height:1.5px;margin:4px auto;
+  background:linear-gradient(90deg,transparent,rgba(0,255,210,.7),rgba(255,90,180,.7),transparent);
+}
+.logo-sub{
+  font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.4em;
+  color:rgba(0,210,170,.55);display:block;margin-top:2px;
+}
+
+/* ── TAP TO START (bigger, much stronger glow) ── */
+.tap-wrap{
+  position:absolute;
+  z-index:10;pointer-events:all;cursor:pointer;white-space:nowrap;
+  text-align:center;will-change:transform;
+}
+.tap-frame{
+  display:inline-flex;align-items:center;gap:14px;
+  padding:10px 32px;border-radius:50px;
+  background:linear-gradient(135deg,
+    rgba(0,255,210,.10),rgba(255,255,255,.08),rgba(255,90,180,.12));
+  border:1.8px solid rgba(255,255,255,.80);
+  box-shadow:
+    0 0 18px rgba(255,255,255,.60),
+    0 0 36px rgba(0,255,210,.60),
+    0 0 60px rgba(255,90,180,.50),
+    0 0 90px rgba(180,120,255,.30),
+    inset 0 0 22px rgba(255,255,255,.18);
+  animation:tapFrame 1.2s ease-in-out infinite;
+}
+@keyframes tapFrame{
+  0%,100%{box-shadow:
+    0 0 12px rgba(255,255,255,.45),
+    0 0 26px rgba(0,255,210,.45),
+    0 0 44px rgba(255,90,180,.38),
+    0 0 70px rgba(180,120,255,.22),
+    inset 0 0 14px rgba(255,255,255,.12);}
+  50%{box-shadow:
+    0 0 28px rgba(255,255,255,.90),
+    0 0 52px rgba(0,255,210,.80),
+    0 0 84px rgba(255,90,180,.70),
+    0 0 120px rgba(180,120,255,.50),
+    0 0 160px rgba(0,180,255,.22),
+    inset 0 0 28px rgba(255,255,255,.28);}
+}
+.tap-deco{
+  font-size:15px;
+  background:linear-gradient(90deg,#00ffd0,#ffffff,#ff5db8);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 8px rgba(0,255,210,.9));
+  animation:decoSpin 3s linear infinite;
+}
+@keyframes decoSpin{0%{transform:rotate(0);}100%{transform:rotate(360deg);}}
+.tap-txt{
+  font-family:'Orbitron',monospace;font-size:15px;font-weight:700;
+  letter-spacing:.32em;
+  background:linear-gradient(90deg,#00ffd0,#ffffff,#ff5db8);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:
+    drop-shadow(0 0 6px rgba(255,255,255,1))
+    drop-shadow(0 0 14px rgba(0,255,210,.80))
+    drop-shadow(0 0 24px rgba(255,90,180,.65));
+  animation:tapPulse 1.2s ease-in-out infinite;
+}
+@keyframes tapPulse{
+  0%,100%{opacity:.25;}
+  50%{opacity:1;}
+}
+
+/* ── Version ── */
+.ver-txt{
+  position:absolute;bottom:8px;left:10px;z-index:10;
+  font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.08em;
+  color:rgba(0,180,150,.35);pointer-events:none;
+}
+
+/* ── Login bonus badge（ネオンピンク×シアンブルー） ── */
+.login-badge{
+  position:absolute;top:10px;right:10px;z-index:10;
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(145deg,rgba(215,228,242,.90),rgba(182,202,222,.80));
+  border:1.8px solid rgba(140,175,215,.62);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;pointer-events:all;
+  box-shadow:0 2px 12px rgba(100,148,200,.28),inset 0 1px 0 rgba(255,255,255,.55);
+    inset 0 0 12px rgba(0,240,220,.14);
+  animation:giftPulse 2.2s ease-in-out infinite;
+}
+@keyframes giftPulse{
+  0%,100%{
+    box-shadow:0 0 12px rgba(0,230,210,.50),0 0 26px rgba(255,60,180,.35),0 0 46px rgba(0,200,255,.20),inset 0 0 10px rgba(0,240,220,.12);
+    transform:scale(1);
+    border-color:rgba(0,240,220,.50);
+  }
+  50%{
+    box-shadow:0 0 22px rgba(0,240,220,.90),0 0 44px rgba(255,60,180,.70),0 0 75px rgba(0,200,255,.45),0 0 110px rgba(255,60,180,.20),inset 0 0 18px rgba(0,240,220,.25);
+    transform:scale(1.07);
+    border-color:rgba(255,100,210,.80);
+  }
+}
+.gift-icon{
+  line-height:1;display:flex;align-items:center;justify-content:center;
+  color:rgba(72,118,170,.85);
+  filter:drop-shadow(0 0 3px rgba(100,150,200,.50));
+}
+.gift-new{
+  font-family:'Share Tech Mono',monospace;font-size:5px;font-weight:700;
+  letter-spacing:.04em;
+  color:rgba(72,108,155,.80);
+}
+
+/* ── Back button — 光沢シルバー統一 ── */
+.back-btn{
+  position:absolute;top:10px;left:10px;z-index:15;
+  width:42px;height:42px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,rgba(252,255,255,.98) 0%,rgba(222,236,250,.96) 38%,rgba(188,212,234,.92) 100%);
+  border:1.8px solid rgba(140,180,220,.68);
+  text-decoration:none;pointer-events:all;
+  box-shadow:0 3px 12px rgba(100,148,200,.32),inset 0 2.5px 0 rgba(255,255,255,.92),inset 0 -1px 0 rgba(100,140,185,.14);
+  transition:transform .18s,box-shadow .18s;
+}
+.back-btn:hover{transform:scale(1.12);box-shadow:0 4px 16px rgba(100,148,200,.45),inset 0 2.5px 0 rgba(255,255,255,.95);}
+.back-arrow{
+  font-size:18px;line-height:1;
+  color:rgba(68,112,168,.88);
+  -webkit-text-fill-color:rgba(68,112,168,.88);
+  filter:drop-shadow(0 0 2px rgba(90,138,198,.45));
+}
+
+/* ── Tap ripple ── */
+.ripple{
+  position:fixed;border-radius:50%;pointer-events:none;z-index:20;
+  border:2px solid rgba(0,255,210,.80);
+  animation:ripOut .56s ease-out forwards;
+}
+@keyframes ripOut{
+  0%{width:0;height:0;margin:0;opacity:.95;}
+  100%{width:140px;height:140px;margin:-70px;opacity:0;}
+}
+</style>
+<style>
+body{background:#000!important;}
+/* ── タイトル動画背景 ── */
+.title-video-bg{
+  position:absolute;top:50px;left:0;
+  width:100%;height:calc(100% + 50px);
+  object-fit:cover;object-position:center;
+  z-index:0;pointer-events:none;
+}
+/* ── 黒帯ヘッダー内にロゴ・ボタンを収める ── */
+.logo-back,.logo-front-l,.logo-front-r{top:10px;}
+.logo-eyebrow{display:none;}
+.logo-main{font-size:30px;letter-spacing:.55em;}
+
+/* ── タイトル後ろのネオン漏れ光 ── */
+.logo-back::before{
+  content:'';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:130%;height:320%;
+  background:radial-gradient(ellipse 85% 55% at 50% 50%,
+    rgba(0,255,210,.55) 0%,
+    rgba(160,80,255,.40) 28%,
+    rgba(255,60,180,.28) 52%,
+    rgba(0,200,255,.12) 68%,
+    transparent 82%);
+  filter:blur(16px);
+  pointer-events:none;
+  z-index:-1;
+  animation:neonBloom 2.6s ease-in-out infinite;
+}
+@keyframes neonBloom{
+  0%,100%{opacity:.70;transform:translate(-50%,-50%) scale(1);}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.12);}
+}
+.logo-divider,.logo-sub{display:none;}
+
+/* ── 戻るボタン：レインボーネオン ── */
+.back-btn{
+  top:9px;width:32px;height:32px;
+  background:linear-gradient(#0a0a0a,#0a0a0a) padding-box,
+             linear-gradient(135deg,#00f0dc,#a064ff,#f03caa,#00dcff,#00f0dc) border-box !important;
+  border:1.8px solid transparent !important;
+  box-shadow:
+    0 0 8px rgba(0,240,220,.60),
+    0 0 18px rgba(160,100,255,.45),
+    0 0 30px rgba(240,60,170,.30) !important;
+  animation:rainbowGlow 2.4s ease-in-out infinite !important;
+}
+.back-arrow{
+  color:transparent !important;
+  -webkit-text-fill-color:transparent !important;
+  background:linear-gradient(135deg,#00f0dc,#a064ff,#f03caa);
+  -webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(0 0 4px rgba(0,240,220,.9));
+}
+
+/* ── プレゼントボタン：レインボーネオン ── */
+.login-badge{
+  top:6px;width:38px;height:38px;gap:1px;
+  background:linear-gradient(#0a0a0a,#0a0a0a) padding-box,
+             linear-gradient(135deg,#f03caa,#a064ff,#00f0dc,#00dcff,#f03caa) border-box !important;
+  border:1.8px solid transparent !important;
+  box-shadow:
+    0 0 8px rgba(240,60,170,.60),
+    0 0 18px rgba(160,100,255,.45),
+    0 0 30px rgba(0,240,220,.30) !important;
+  animation:rainbowGlow 2.4s ease-in-out infinite .8s !important;
+}
+.gift-icon{color:transparent !important;}
+.gift-icon svg{width:20px;height:20px;}
+.gift-icon svg rect,.gift-icon svg line,.gift-icon svg path{
+  stroke:url(#rainbowGrad) !important;
+  fill:none !important;
+}
+.gift-new{
+  font-size:4px;
+  background:linear-gradient(90deg,#00f0dc,#f03caa);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+@keyframes rainbowGlow{
+  0%,100%{box-shadow:0 0 8px rgba(0,240,220,.60),0 0 18px rgba(160,100,255,.45),0 0 30px rgba(240,60,170,.30);}
+  50%{box-shadow:0 0 14px rgba(0,240,220,.95),0 0 28px rgba(160,100,255,.75),0 0 48px rgba(240,60,170,.55),0 0 70px rgba(0,220,255,.30);}
+}
+
+/* ── ボタン ネオン漏れ光 ── */
+.back-btn::before, .login-badge::before{
+  content:'';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:220%;height:220%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,
+    rgba(0,255,210,.55) 0%,
+    rgba(160,80,255,.38) 30%,
+    rgba(255,60,180,.22) 58%,
+    transparent 78%);
+  filter:blur(10px);
+  pointer-events:none;
+  z-index:-1;
+  animation:neonBloom 2.6s ease-in-out infinite;
+}
+.login-badge::before{
+  background:radial-gradient(ellipse at center,
+    rgba(255,60,180,.55) 0%,
+    rgba(160,80,255,.38) 30%,
+    rgba(0,220,255,.22) 58%,
+    transparent 78%);
+  animation:neonBloom 2.6s ease-in-out infinite .9s;
+}
+
+/* ── ボタン タップ感 ── */
+.back-btn, .login-badge{
+  transition:transform .12s cubic-bezier(.34,1.56,.64,1), box-shadow .12s !important;
+  cursor:pointer;
+}
+.back-btn:active, .login-badge:active{
+  transform:scale(.82) !important;
+  box-shadow:0 0 4px rgba(0,240,220,.40) !important;
+}
+@keyframes btnBounce{
+  0%  {transform:scale(.82);}
+  55% {transform:scale(1.15);}
+  80% {transform:scale(.96);}
+  100%{transform:scale(1);}
+}
+.btn-bounce{animation:btnBounce .38s cubic-bezier(.34,1.56,.64,1) forwards !important;}
+</style>
+</head>
+<body>
+
+<!-- ── タイトル画面動画背景 ── -->
+<video class="title-video-bg" autoplay muted loop playsinline>
+  <source src="スマホゲーム　タイトル画面.mp4" type="video/mp4">
+</video>
+
+<canvas id="gc"></canvas>
+<!-- ── 前景パーティクル canvas（z:7, LIZの前） ── -->
+<canvas id="gc-front"></canvas>
+<!-- ── デコ丸 ── -->
+
+
+<!-- ── LIZ character (動画背景に含まれるため非表示) ── -->
+
+<!-- ── Logo BACK layer (z:2 — behind LIZ) ── -->
+<div class="logo-back">
+  <span class="logo-eyebrow">✦ MUSIC × STAGE × IDOL ✦</span>
+  <span class="logo-main">NEON BEAT</span>
+  <span class="logo-divider"></span>
+  <span class="logo-sub">— RHYTHM IDOL GAME —</span>
+</div>
+
+
+<!-- ── Login bonus（プレゼントアイコン） ── -->
+<div class="login-badge">
+  <div class="gift-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#00f0dc"/>
+          <stop offset="40%"  stop-color="#a064ff"/>
+          <stop offset="75%"  stop-color="#f03caa"/>
+          <stop offset="100%" stop-color="#00dcff"/>
+        </linearGradient>
+      </defs>
+      <rect x="3" y="12" width="18" height="10" rx="1.5" stroke="url(#rainbowGrad)" stroke-width="1.4" fill="rgba(0,240,220,.08)"/>
+      <rect x="2" y="8.5" width="20" height="4" rx="1" stroke="url(#rainbowGrad)" stroke-width="1.3" fill="rgba(160,100,255,.08)"/>
+      <line x1="12" y1="8.5" x2="12" y2="22" stroke="url(#rainbowGrad)" stroke-width="1.3"/>
+      <path d="M12 8.5C10 5 5.5 5.5 7 8.5C8 11 12 8.5 12 8.5" stroke="url(#rainbowGrad)" stroke-width="1.2" fill="rgba(240,60,170,.10)"/>
+      <path d="M12 8.5C14 5 18.5 5.5 17 8.5C16 11 12 8.5 12 8.5" stroke="url(#rainbowGrad)" stroke-width="1.2" fill="rgba(0,220,255,.10)"/>
+    </svg>
+  </div>
+  <div class="gift-new">BONUS</div>
+</div>
+
+<!-- ── TAP area beam ── -->
+<div class="tap-beam"></div>
+
+<!-- ── TAP TO START ── -->
+<div class="tap-wrap" id="tapWrap">
+  <div class="tap-frame">
+    <span class="tap-deco">✦</span>
+    <span class="tap-txt">TAP  TO  START</span>
+    <span class="tap-deco">✦</span>
+  </div>
+</div>
+
+<!-- ── Ver ── -->
+<div class="ver-txt">Ver 1.0.0</div>
+
+<!-- ── Back（ネオンピンク丸矢印） ── -->
+<a class="back-btn" href="works.html"><span class="back-arrow">↩</span></a>
+
+<script>
+/* ── 背景canvas ── */
+const canvas=document.getElementById('gc');
+const ctx=canvas.getContext('2d');
+const W=()=>canvas.width, H=()=>canvas.height;
+function resize(){canvas.width=window.innerWidth;canvas.height=Math.min(390,window.innerHeight);}
+resize();window.addEventListener('resize',resize);
+
+/* ── 前景canvas（z:7, LIZの前） ── */
+const canvasF=document.getElementById('gc-front');
+const ctxF=canvasF.getContext('2d');
+const WF=()=>canvasF.width, HF=()=>canvasF.height;
+function resizeF(){canvasF.width=window.innerWidth;canvasF.height=Math.min(390,window.innerHeight);}
+resizeF();window.addEventListener('resize',resizeF);
+
+let frame=0;
+
+/* BG — 動画背景使用のため canvas は透明クリアのみ */
+function drawBG(){ctx.clearRect(0,0,W(),H());}
+
+/* ── Stage floor (neon grid) ── */
+function drawFloor(){
+  const w=W(),h=H();
+  const vpY=h*.60,vpX=w/2;
+
+  // Floor surface — soft pink/lavender tint
+  const fg=ctx.createLinearGradient(0,vpY,0,h);
+  fg.addColorStop(0,'rgba(255,210,240,0)');
+  fg.addColorStop(.25,'rgba(255,190,230,.08)');
+  fg.addColorStop(.75,'rgba(210,180,255,.12)');
+  fg.addColorStop(1,'rgba(200,170,255,.18)');
+  ctx.fillStyle=fg;ctx.fillRect(0,vpY,w,h-vpY);
+
+  // Horizontal grid lines — perspective spacing (stronger on light bg)
+  for(let i=0;i<12;i++){
+    const t=(i/12);
+    const y=vpY+(h-vpY)*(t*t);
+    const a=.06+t*.28;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);
+    ctx.strokeStyle=i%2===0?`rgba(0,200,180,${a})`:`rgba(180,60,255,${a})`;
+    ctx.lineWidth=.75;ctx.stroke();
+  }
+  // Converging verticals
+  for(let i=0;i<=22;i++){
+    const bx=(w/22)*i;
+    const dist=Math.abs(i-11)/11;
+    const a=.06+dist*.08;
+    const vg=ctx.createLinearGradient(vpX,vpY,bx,h);
+    vg.addColorStop(0,'rgba(0,180,180,0)');
+    vg.addColorStop(.3,`rgba(0,180,180,${a})`);
+    vg.addColorStop(1,`rgba(160,80,255,${a*.9})`);
+    ctx.beginPath();ctx.moveTo(vpX,vpY);ctx.lineTo(bx,h);
+    ctx.strokeStyle=vg;ctx.lineWidth=.5;ctx.stroke();
+  }
+
+  // Character stand glow
+  const sg=ctx.createRadialGradient(vpX,h,0,vpX,h,w*.45);
+  sg.addColorStop(0,'rgba(255,120,200,.18)');
+  sg.addColorStop(.3,'rgba(200,100,255,.10)');
+  sg.addColorStop(.65,'rgba(0,200,220,.05)');
+  sg.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=sg;ctx.fillRect(0,vpY,w,h-vpY);
+
+  // Horizon glow line
+  const hg=ctx.createLinearGradient(0,vpY-4,0,vpY+18);
+  hg.addColorStop(0,'rgba(255,255,255,0)');
+  hg.addColorStop(.5,'rgba(0,200,180,.18)');
+  hg.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=hg;ctx.fillRect(0,vpY-4,w,22);
+}
+
+/* ── Spotlights (from ceiling, vivid on dark bg) ── */
+function drawSpotlights(){
+  const w=W(),h=H();
+  const t=frame*.007;
+  const spots=[
+    {x:w*(.18+Math.sin(t)*.04),col:'0,200,180',a:.10,spread:68,tgt:h*.78},
+    {x:w*(.50+Math.sin(t*.78+1.2)*.03),col:'200,100,255',a:.08,spread:80,tgt:h*.82},
+    {x:w*(.82+Math.sin(t*.9+2.5)*.04),col:'255,80,180',a:.10,spread:68,tgt:h*.78},
+  ];
+  spots.forEach(s=>{
+    const sg=ctx.createLinearGradient(s.x,8,s.x,s.tgt);
+    sg.addColorStop(0,`rgba(${s.col},${s.a*1.4})`);
+    sg.addColorStop(.65,`rgba(${s.col},${s.a})`);
+    sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.moveTo(s.x-14,8);ctx.lineTo(s.x+14,8);
+    ctx.lineTo(s.x+s.spread,s.tgt);ctx.lineTo(s.x-s.spread,s.tgt);
+    ctx.closePath();ctx.fillStyle=sg;ctx.fill();
+  });
+}
+
+/* ── Concert light rig ── */
+function drawRig(){
+  const w=W();
+  ctx.fillStyle='rgba(255,220,245,.30)';ctx.fillRect(0,0,w,8);
+  const nc=24;
+  const cols=['0,230,180','255,90,180','180,90,255','255,200,60','0,180,255','255,255,255'];
+  for(let i=0;i<nc;i++){
+    const x=(i/(nc-1))*w;
+    const t2=frame*.055+i*.50;
+    const intensity=(Math.sin(t2)+1)/2;
+    const on=intensity>.30;
+    const c=cols[i%cols.length];
+    if(on){
+      const a=.6+intensity*.4;
+      ctx.beginPath();ctx.arc(x,4.5,3.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${c},${a})`;
+      ctx.shadowBlur=12;ctx.shadowColor=`rgba(${c},.85)`;ctx.fill();ctx.shadowBlur=0;
+      // Light beam
+      const bg=ctx.createLinearGradient(x,8,x,50);
+      bg.addColorStop(0,`rgba(${c},${intensity*.18})`);
+      bg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.moveTo(x-5,8);ctx.lineTo(x+5,8);
+      ctx.lineTo(x+20,50);ctx.lineTo(x-20,50);
+      ctx.closePath();ctx.fillStyle=bg;ctx.fill();
+    }
+  }
+}
+
+/* ── Character aura (behind LIZ, on canvas) ── */
+function drawCharAura(){
+  const w=W(),h=H();
+  const cx=w/2,cy=h*.52;
+  const t=frame*.015;
+  const pulse=(Math.sin(t)+1)/2;
+
+  // Body halo (softer on light bg)
+  const aura=ctx.createRadialGradient(cx,cy,0,cx,cy,w*.38);
+  aura.addColorStop(0,`rgba(255,130,200,${.12+pulse*.06})`);
+  aura.addColorStop(.35,`rgba(180,100,255,${.07+pulse*.03})`);
+  aura.addColorStop(.70,`rgba(0,180,200,.03)`);
+  aura.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=aura;ctx.fillRect(0,0,w,h);
+
+  // Foot glow
+  const foot=ctx.createRadialGradient(cx,h*.78,0,cx,h*.78,w*.22);
+  foot.addColorStop(0,`rgba(255,150,210,${.15+pulse*.08})`);
+  foot.addColorStop(.45,`rgba(200,100,255,.07)`);
+  foot.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=foot;ctx.fillRect(0,h*.55,w,h*.5);
+}
+
+/* ── Starburst rays (subtle) ── */
+function drawStarburst(){
+  const cx=W()/2,cy=H()*.50;
+  const n=20,t=frame*.0015;
+  ctx.save();ctx.translate(cx,cy);
+  for(let i=0;i<n;i++){
+    const a=(i/n)*Math.PI*2+t;
+    ctx.save();ctx.rotate(a);
+    const rg=ctx.createLinearGradient(0,0,0,-H()*.55);
+    rg.addColorStop(0,'rgba(200,100,255,.08)');
+    rg.addColorStop(.5,'rgba(255,80,180,.04)');
+    rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.moveTo(-8,0);ctx.lineTo(8,0);
+    ctx.lineTo(3,-H()*.55);ctx.lineTo(-3,-H()*.55);
+    ctx.closePath();ctx.fillStyle=rg;ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+/* ── 4-point star helper ── */
+function drawStar4(x,y,r,col){
+  ctx.save();ctx.translate(x,y);
+  ctx.beginPath();
+  ctx.moveTo(0,-r);ctx.lineTo(r*.28,-r*.28);
+  ctx.lineTo(r,0);ctx.lineTo(r*.28,r*.28);
+  ctx.lineTo(0,r);ctx.lineTo(-r*.28,r*.28);
+  ctx.lineTo(-r,0);ctx.lineTo(-r*.28,-r*.28);
+  ctx.closePath();
+  ctx.fillStyle=col;
+  ctx.shadowBlur=r*2;ctx.shadowColor=col;ctx.fill();ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+/* ── BG corner stars ── */
+const BG_STARS=[
+  {x:.06,y:.21,r:12,col:'rgba(0,220,180,.30)'},{x:.94,y:.19,r:11,col:'rgba(255,90,180,.30)'},
+  {x:.03,y:.68,r:10,col:'rgba(180,100,255,.28)'},{x:.97,y:.70,r:12,col:'rgba(255,210,60,.28)'},
+  {x:.50,y:.04,r:9,col:'rgba(0,200,255,.24)'},{x:.13,y:.88,r:8,col:'rgba(255,80,180,.24)'},
+  {x:.87,y:.86,r:8,col:'rgba(0,220,180,.24)'},
+];
+function drawBGStars(){
+  BG_STARS.forEach(s=>{
+    const pulse=.62+Math.sin(frame*.034+s.x*12)*.38;
+    drawStar4(s.x*W(),s.y*H(),s.r*pulse,s.col);
+  });
+}
+
+/* ── Sparkle particles ── */
+const NOTE_CHARS=['♩','♪','♫','♬','♭','♯'];
+class Spark{
+  constructor(burst){this.burst=burst||false;this.init();}
+  init(){
+    const w=W(),h=H();
+    if(this.burst){
+      this.x=w/2+(Math.random()-.5)*220;
+      this.y=h*.45+(Math.random()-.5)*180;
+    } else {
+      this.x=Math.random()*w;this.y=Math.random()*h;
+    }
+    this.r=Math.random()*2.8+.5;
+    this.vx=(Math.random()-.5)*.5;
+    this.vy=-(Math.random()*.85+.14);
+    this.life=0;this.max=Math.random()*120+50;
+    this.type=Math.random();
+    const rnd=Math.random();
+    if(rnd<.27)      this.col='0,235,180';
+    else if(rnd<.50) this.col='255,90,180';
+    else if(rnd<.68) this.col='175,95,255';
+    else if(rnd<.80) this.col='255,215,55';
+    else if(rnd<.92) this.col='0,200,255';
+    else             this.col='255,255,255';
+    this.isNote=Math.random()<.10;
+    this.noteChar=NOTE_CHARS[Math.floor(Math.random()*6)];
+    this.noteSize=10+Math.random()*14;
+    const nc=Math.random();
+    this.noteCol=nc<.35?'#00ffd0':nc<.65?'#ff5db8':nc<.82?'#b860ff':'#ffd740';
+  }
+  step(){
+    this.x+=this.vx+Math.sin(this.life*.04+this.x*.02)*.15;
+    this.y+=this.vy;this.life++;
+    if(this.life>this.max)this.init();
+  }
+  draw(){
+    const fi=Math.min(1,this.life/16);
+    const fo=Math.max(0,1-(this.life-this.max*.6)/(this.max*.4));
+    const a=.85*fi*fo;if(a<.01)return;
+    if(this.isNote){
+      ctx.save();ctx.globalAlpha=a*.9;
+      ctx.font=`bold ${this.noteSize}px serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=this.noteCol;
+      ctx.shadowBlur=12;ctx.shadowColor=this.noteCol;
+      ctx.fillText(this.noteChar,this.x,this.y);ctx.shadowBlur=0;
+      ctx.restore();return;
+    }
+    ctx.shadowBlur=this.r*6;ctx.shadowColor=`rgba(${this.col},${a*.7})`;
+    if(this.type<.50){
+      ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${this.col},${a})`;ctx.fill();
+    } else {
+      const s=this.r*2.5;
+      ctx.beginPath();
+      ctx.moveTo(this.x,this.y-s);ctx.lineTo(this.x+s*.28,this.y-s*.28);
+      ctx.lineTo(this.x+s,this.y);ctx.lineTo(this.x+s*.28,this.y+s*.28);
+      ctx.lineTo(this.x,this.y+s);ctx.lineTo(this.x-s*.28,this.y+s*.28);
+      ctx.lineTo(this.x-s,this.y);ctx.lineTo(this.x-s*.28,this.y-s*.28);
+      ctx.closePath();ctx.fillStyle=`rgba(${this.col},${a})`;ctx.fill();
+    }
+    ctx.shadowBlur=0;
+  }
+}
+const sparks=Array.from({length:130},()=>new Spark(false));
+const burstSparks=[];
+
+/* ── Vignette — ライト背景では使わない ── */
+function drawVignette(){}
+
+/* ── Tap ripple ── */
+function addRipple(ex,ey){
+  const d=document.createElement('div');
+  d.className='ripple';d.style.cssText=`left:${ex}px;top:${ey}px;`;
+  document.body.appendChild(d);setTimeout(()=>d.remove(),580);
+  for(let i=0;i<14;i++)burstSparks.push(new Spark(true));
+  while(burstSparks.length>38)burstSparks.shift();
+}
+/* ── ボタン バウンス ── */
+function addBounce(el){
+  el.classList.remove('btn-bounce');
+  void el.offsetWidth;
+  el.classList.add('btn-bounce');
+  el.addEventListener('animationend',()=>el.classList.remove('btn-bounce'),{once:true});
+}
+document.querySelectorAll('.back-btn,.login-badge').forEach(btn=>{
+  btn.addEventListener('pointerup',()=>addBounce(btn));
+  btn.addEventListener('pointerleave',()=>addBounce(btn));
+});
+
+document.body.addEventListener('pointerdown',e=>{
+  if(e.target.classList.contains('back-btn')||e.target.closest('.back-btn'))return;
+  if(e.target.classList.contains('login-badge')||e.target.closest('.login-badge'))return;
+  addRipple(e.clientX-70,e.clientY-70);
+  setTimeout(()=>{location.href='game_home_v1.html';},520);
+});
+
+/* ── TAP TO START エリア周辺グロウ（canvas） ── */
+function drawTapGlow(){
+  const w=W(),h=H();
+  const cx=w/2,cy=h-28;
+  // 横方向の広いグロウ
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,w*.52);
+  g.addColorStop(0,`rgba(0,255,210,${.07+Math.sin(frame*.05)*.04})`);
+  g.addColorStop(.28,`rgba(255,255,255,${.04+Math.sin(frame*.05)*.02})`);
+  g.addColorStop(.55,`rgba(255,90,180,.03)`);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,h*.72,w,h*.28);
+}
+
+/* ── 前景パーティクル（LIZより前、画面に奥行き感） ── */
+class FrontSpark{
+  constructor(){this.init();}
+  init(){
+    const w=WF(),h=HF();
+    // 画面全体にランダム配置（主に左右端・中央付近）
+    this.x=Math.random()*w;
+    this.y=Math.random()*h*.90;
+    this.r=Math.random()*3.2+1.2;
+    this.vx=(Math.random()-.5)*.55;
+    this.vy=-(Math.random()*.65+.12);
+    this.life=0;this.max=Math.random()*90+55;
+    this.type=Math.random();
+    const rnd=Math.random();
+    if(rnd<.30)      this.col='0,240,200';
+    else if(rnd<.55) this.col='255,90,180';
+    else if(rnd<.72) this.col='185,100,255';
+    else if(rnd<.85) this.col='255,220,60';
+    else             this.col='255,255,255';
+  }
+  step(){
+    this.x+=this.vx+Math.sin(this.life*.05+this.x*.01)*.18;
+    this.y+=this.vy;this.life++;
+    if(this.life>this.max)this.init();
+  }
+  draw(){
+    const fi=Math.min(1,this.life/12);
+    const fo=Math.max(0,1-(this.life-this.max*.62)/(this.max*.38));
+    const a=.92*fi*fo;if(a<.01)return;
+    ctxF.shadowBlur=this.r*8;ctxF.shadowColor=`rgba(${this.col},${a*.65})`;
+    if(this.type<.50){
+      ctxF.beginPath();ctxF.arc(this.x,this.y,this.r,0,Math.PI*2);
+      ctxF.fillStyle=`rgba(${this.col},${a})`;ctxF.fill();
+    } else {
+      const s=this.r*2.8;
+      ctxF.beginPath();
+      ctxF.moveTo(this.x,this.y-s);ctxF.lineTo(this.x+s*.28,this.y-s*.28);
+      ctxF.lineTo(this.x+s,this.y);ctxF.lineTo(this.x+s*.28,this.y+s*.28);
+      ctxF.lineTo(this.x,this.y+s);ctxF.lineTo(this.x-s*.28,this.y+s*.28);
+      ctxF.lineTo(this.x-s,this.y);ctxF.lineTo(this.x-s*.28,this.y-s*.28);
+      ctxF.closePath();ctxF.fillStyle=`rgba(${this.col},${a})`;ctxF.fill();
+    }
+    ctxF.shadowBlur=0;
+  }
+}
+// 前景パーティクル 35個（背景の130個より少なく、より目立つ）
+const frontSparks=Array.from({length:35},()=>new FrontSpark());
+
+/* ── Main render ── */
+function render(){
+  frame++;
+  // 背景canvas
+  ctx.clearRect(0,0,W(),H());
+  drawBG();
+  drawCharAura();
+  drawFloor();
+  drawTapGlow();
+  drawVignette();
+  ctxF.clearRect(0,0,WF(),HF());
+  requestAnimationFrame(render);
+}
+render();
+
+/* ── TAP TO START 不規則軌道アニメーション ── */
+(function(){
+  const el=document.getElementById('tapWrap');
+  let tt=0;
+  function moveTap(){
+    tt+=0.011;
+    const W=window.innerWidth,H=Math.min(390,window.innerHeight);
+    // 複数サイン波の合成で不規則な軌道
+    const x=W/2+Math.sin(tt)*W*.26+Math.sin(tt*1.71+1.2)*W*.09+Math.sin(tt*2.9+2.1)*W*.04;
+    const y=H*.76+Math.sin(tt*1.33+.5)*H*.09+Math.sin(tt*2.17+1.0)*H*.04+Math.sin(tt*3.5+.7)*H*.02;
+    // 水平速度に応じた傾き
+    const rot=Math.sin(tt*.8)*10+Math.cos(tt*1.4)*4+Math.sin(tt*2.1)*2;
+    el.style.left=x+'px';
+    el.style.top=y+'px';
+    el.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
+    requestAnimationFrame(moveTap);
+  }
+  moveTap();
+})();
+</script>
+</body>
+</html>

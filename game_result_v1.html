@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEON BEAT - Result</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700&family=Rajdhani:wght@700&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    width: 100vw; height: 100vh;
+    display: flex; align-items: flex-start; justify-content: center;
+    background: #000; overflow: hidden;
+    margin: 0; padding: 0;
+  }
+  body {
+    width: min(100vw, 844px); height: 390px; max-height: 390px;
+    overflow: hidden; position: relative;
+    background: #d0d4ee;
+    font-family: 'Noto Sans JP', sans-serif;
+    margin: 0; padding: 0;
+  }
+
+  /* ── 横型スマホと同サイズ ── */
+  #app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #d0d4ee;
+  }
+
+  #gc {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* ── 上部バナー帯（横幅フル） ── */
+  #banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    opacity: 0;
+    animation: banner-enter 0.55s cubic-bezier(.22,.68,0,1.4) 0.3s forwards;
+    /* 上部グロー帯 – cyber-pop */
+    background: linear-gradient(180deg,
+      rgba(5,0,18,0.96) 0%,
+      rgba(8,0,25,0.85) 55%,
+      transparent 100%);
+    border-bottom: 1px solid rgba(0,220,255,0.50);
+    box-shadow: 0 1px 20px rgba(0,200,255,0.18);
+  }
+
+  @keyframes banner-enter {
+    0%   { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  #banner-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 30px;
+    letter-spacing: 0.06em;
+    background: linear-gradient(160deg, #00ffee 0%, #00ccff 30%, #ff44cc 65%, #ff0099 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter:
+      drop-shadow(0 0 6px rgba(0,220,255,0.80))
+      drop-shadow(0 0 16px rgba(255,60,200,0.55));
+    animation: bannerNoise 6s ease-in-out infinite;
+  }
+
+  @keyframes bannerNoise {
+    0%,86%,100%{transform:translate(0,0);filter:drop-shadow(0 1px 0 rgba(200,0,100,0.60)) drop-shadow(0 2px 12px rgba(255,60,150,0.50));}
+    87%{transform:translate(-2px,1px);filter:drop-shadow(0 1px 0 rgba(200,0,100,0.60)) brightness(1.5);}
+    88%{transform:translate(2px,-1px);filter:saturate(1.8) hue-rotate(15deg);}
+    89%{transform:translate(0,0);filter:drop-shadow(0 1px 0 rgba(200,0,100,0.60)) drop-shadow(0 2px 12px rgba(255,60,150,0.50));}
+    90%{filter:drop-shadow(0 1px 0 rgba(200,0,100,0.60)) brightness(1.3);}
+    91%{filter:drop-shadow(0 1px 0 rgba(200,0,100,0.60)) drop-shadow(0 2px 12px rgba(255,60,150,0.50));}
+  }
+
+  #banner-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(0,220,255,0.75);
+    text-shadow: 0 0 8px rgba(0,200,255,0.50);
+    letter-spacing: 0.30em;
+  }
+
+  /* ── 下部エリア（LIZ ＋ スコアパネル） ── */
+  #lower {
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    bottom: 68px; /* リゾナンスパネル分 */
+    display: flex;
+    align-items: stretch;
+    z-index: 10;
+  }
+
+  /* ── 左：LIZキャラ ── */
+  #liz-zone {
+    width: 42%;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  #liz {
+    height: 100%;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    object-position: bottom center;
+    display: block;
+    opacity: 0;
+    filter: drop-shadow(0 0 22px rgba(255,80,160,0.55)) drop-shadow(0 0 40px rgba(0,220,200,0.25)) brightness(1.10);
+    animation:
+      liz-enter 0.85s cubic-bezier(.22,.68,0,1.3) 0.5s forwards,
+      liz-sway  3.2s cubic-bezier(0.37,0,0.63,1) 1.4s infinite;
+    transform-origin: bottom center;
+  }
+
+  @keyframes liz-enter {
+    0%   { opacity: 0; transform: translateY(30px) scale(0.85); }
+    60%  { opacity: 1; transform: translateY(-6px) scale(1.02); }
+    80%  { transform: translateY(3px) scale(0.99); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes liz-sway {
+    0%   { transform: translateX(0px)  rotate(0deg);  }
+    25%  { transform: translateX(-7px) rotate(-2deg); }
+    50%  { transform: translateX(0px)  rotate(0deg);  }
+    75%  { transform: translateX(7px)  rotate(2deg);  }
+    100% { transform: translateX(0px)  rotate(0deg);  }
+  }
+
+  /* ── 右：スコア ＋ ボタン ── */
+  #right-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 20px 10px 8px;
+    gap: 10px;
+  }
+
+  /* スコアパネル — cyber HUD */
+  #score-panel {
+    position: relative;
+    background: linear-gradient(145deg,rgba(5,12,30,.58),rgba(0,8,22,.52));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0,220,255,.55);
+    border-radius: 0;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    padding: 14px 18px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    opacity: 0;
+    box-shadow:
+      0 0 0 1px rgba(0,220,255,.20),
+      0 4px 20px rgba(0,180,255,.20),
+      inset 0 1px 0 rgba(0,220,255,.12);
+    animation: panel-fadein 0.5s ease 1.0s forwards;
+    overflow: hidden;
+  }
+  /* スキャンライン */
+  #score-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,200,255,0.028) 2px,
+      rgba(0,200,255,0.028) 3px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  #score-panel > * { position: relative; z-index: 1; }
+
+  @keyframes panel-fadein {
+    0%   { opacity: 0; transform: translateX(14px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ランクバッジ — cyber hex */
+  #rank-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(135deg, #00ffee 0%, #00aaff 40%, #aa44ff 100%);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    color: #000820;
+    flex-shrink: 0;
+    box-shadow:
+      0 0 12px rgba(0,220,255,0.90),
+      0 0 28px rgba(0,180,255,0.60),
+      0 0 55px rgba(160,60,255,0.35);
+    animation: rank-glow 2.5s ease-in-out infinite;
+  }
+
+  @keyframes rank-glow {
+    0%,100% {
+      box-shadow:
+        0 0 12px rgba(0,220,255,0.90),
+        0 0 28px rgba(0,180,255,0.60),
+        0 0 55px rgba(160,60,255,0.35);
+    }
+    50% {
+      box-shadow:
+        0 0 18px rgba(0,240,255,1),
+        0 0 40px rgba(0,200,255,0.85),
+        0 0 80px rgba(180,60,255,0.55);
+    }
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .score-label {
+    font-family: 'Rajdhani', 'Russo One', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: rgba(160,210,240,0.90);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 0 6px rgba(0,200,220,0.30);
+  }
+
+  .score-value {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .score-value.gold  { font-size: 20px; color: #ffdd44; text-shadow: 0 0 8px rgba(255,220,0,0.70), 0 0 20px rgba(255,180,0,0.40); }
+  .score-value.mint  { font-size: 18px; color: #00ffee; text-shadow: 0 0 8px rgba(0,255,220,0.70), 0 0 20px rgba(0,200,200,0.40); }
+  .score-value.white { font-size: 18px; color: #ccddff; text-shadow: 0 0 6px rgba(150,180,255,0.50); }
+  .score-value.green {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: #00ffaa;
+    letter-spacing: 0.14em;
+    text-shadow: 0 0 8px rgba(0,255,160,0.70), 0 0 20px rgba(0,200,130,0.40);
+  }
+
+  .panel-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,200,180,0.40), transparent);
+  }
+
+  /* ── ボタン ── */
+  #buttons {
+    display: flex;
+    gap: 10px;
+    opacity: 0;
+    animation: panel-fadein 0.5s ease 1.2s forwards;
+  }
+
+  .btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 0;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    font-family: 'Russo One', 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:active { transform: scale(0.95); }
+
+  /* RETRY — サイバーシアン */
+  .btn-outline {
+    background: linear-gradient(145deg,rgba(0,20,35,.90),rgba(0,15,30,.85));
+    border: 2px solid rgba(0,220,200,.70);
+    color: rgba(0,230,210,.95);
+    text-shadow: 0 0 8px rgba(0,220,200,.60);
+    box-shadow:
+      0 3px 12px rgba(0,200,180,.25),
+      inset 0 1px 0 rgba(0,255,220,.08);
+    animation: retryNoise 7s ease-in-out infinite;
+  }
+
+  @keyframes retryNoise {
+    0%,88%,100%{transform:translate(0,0);clip-path:none;filter:none;}
+    89%{transform:translate(-2px,1px);clip-path:inset(10% 0 82% 0);filter:brightness(1.5) hue-rotate(20deg);}
+    90%{transform:translate(2px,-1px);clip-path:inset(68% 0 12% 0);filter:saturate(2.0);}
+    91%{transform:translate(0,0);clip-path:none;filter:none;}
+    92%{clip-path:inset(38% 0 50% 0);filter:brightness(1.3) hue-rotate(-15deg);}
+    93%{clip-path:none;filter:none;}
+  }
+
+  /* HOME — リズ髪色ミントグリーン */
+  .btn-filled {
+    background: linear-gradient(145deg,#8ee8cc 0%,#4dcbb0 40%,#28b096 100%);
+    border: 2px solid rgba(100,220,190,.80);
+    color: rgba(5,40,30,.95);
+    text-shadow: 0 1px 0 rgba(200,255,240,.55), 0 0 8px rgba(0,200,160,.40);
+    box-shadow:
+      0 3px 14px rgba(40,180,150,.50),
+      inset 0 1.5px 0 rgba(180,255,230,.45),
+      inset 0 -1px 0 rgba(0,80,60,.25);
+    overflow: hidden;
+    position: relative;
+  }
+  .btn-filled::before {
+    content: '';
+    position: absolute;
+    top: -8%; bottom: -8%;
+    width: 14px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.55) 50%,
+      transparent 100%);
+    animation: btn-shine 2.4s cubic-bezier(0.4,0,0.6,1) 1.8s infinite;
+    pointer-events: none;
+  }
+  @keyframes btn-shine {
+    0%   { left: -20px; opacity: 0; }
+    5%   { opacity: 1; }
+    55%  { left: calc(100% + 10px); opacity: 1; }
+    56%  { opacity: 0; }
+    100% { left: calc(100% + 10px); opacity: 0; }
+  }
+  .btn-filled:hover {
+    background: linear-gradient(145deg,#aaeed8 0%,#66d8be 40%,#3abfa8 100%);
+    box-shadow:
+      0 4px 20px rgba(40,180,150,.70),
+      inset 0 1.5px 0 rgba(200,255,240,.55);
+  }
+
+  /* ══════════════════════════════════
+     RESONANCE PANEL — ストーリー連動
+  ══════════════════════════════════ */
+  #resonance-panel {
+    display: none;
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 30;
+    padding: 0 8px 8px;
+    animation: res-rise 0.6s cubic-bezier(.22,.68,0,1.3) 1.8s both;
+  }
+  @keyframes res-rise {
+    0%   { opacity:0; transform:translateY(20px); }
+    100% { opacity:1; transform:translateY(0); }
+  }
+
+  .res-box {
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .res-box::before {
+    content:'';
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      0deg,transparent,transparent 2px,rgba(255,255,255,0.025) 2px,rgba(255,255,255,0.025) 3px
+    );
+    pointer-events:none;
+  }
+
+  /* RIZ type */
+  .res-riz {
+    background: linear-gradient(135deg,rgba(0,180,120,.88),rgba(0,120,80,.90));
+    border: 1.5px solid rgba(0,230,160,.60);
+    box-shadow: 0 0 20px rgba(0,200,140,.35), 0 3px 12px rgba(0,0,0,.40);
+  }
+  /* LUNA type */
+  .res-luna {
+    background: linear-gradient(135deg,rgba(100,0,40,.90),rgba(50,0,20,.92));
+    border: 1.5px solid rgba(200,30,80,.60);
+    box-shadow: 0 0 20px rgba(180,20,60,.35), 0 3px 12px rgba(0,0,0,.40);
+  }
+  /* DUO type */
+  .res-duo {
+    background: linear-gradient(135deg,rgba(0,100,80,.88),rgba(80,10,40,.88));
+    border: 1.5px solid rgba(0,220,180,.40);
+    box-shadow: 0 0 20px rgba(0,200,180,.25), 0 3px 12px rgba(0,0,0,.40);
+  }
+
+  .res-icon {
+    width: 38px; height: 38px;
+    flex-shrink: 0;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .res-text { flex: 1; }
+
+  .res-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7px;
+    letter-spacing: .18em;
+    margin-bottom: 3px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .res-riz   .res-tag { color: #80ffd0; }
+  .res-luna  .res-tag { color: #ff8899; }
+  .res-duo   .res-tag { color: #80eedd; }
+
+  .res-badge {
+    font-size: 6px; font-weight: 900;
+    padding: 1px 5px; border-radius: 3px;
+    letter-spacing: .10em;
+    animation: resBadge 1.2s step-end infinite;
+  }
+  @keyframes resBadge { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+  .res-riz  .res-badge { background:#00c860; color:#fff; }
+  .res-luna .res-badge { background:#cc1030; color:#fff; }
+  .res-duo  .res-badge { background:#009080; color:#fff; }
+
+  .res-main {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 10px;
+    letter-spacing: .08em;
+    margin-bottom: 3px;
+    line-height: 1.35;
+  }
+  .res-riz  .res-main { color: #00ffc0; text-shadow: 0 0 10px rgba(0,200,140,.80); }
+  .res-luna .res-main { color: #ff6688; text-shadow: 0 0 10px rgba(200,30,60,.80); }
+  .res-duo  .res-main { color: #80ffee; text-shadow: 0 0 10px rgba(0,200,180,.80); }
+
+  .res-sub {
+    font-size: 9.5px;
+    color: rgba(200,230,255,.72);
+    line-height: 1.65;
+    letter-spacing: .03em;
+  }
+
+  /* フルコンボ時の特別演出 */
+  @keyframes fcBurst {
+    0%   { opacity:0; transform:scale(.85); }
+    40%  { opacity:1; transform:scale(1.05); }
+    70%  { transform:scale(.98); }
+    100% { opacity:1; transform:scale(1); }
+  }
+  .res-fc-extra {
+    display: none;
+    margin-top: 5px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 9px;
+    letter-spacing: .10em;
+    text-align: center;
+    animation: fcBurst .7s cubic-bezier(.22,.68,0,1.3) 2.4s both;
+  }
+  .res-riz  .res-fc-extra {
+    background: rgba(0,200,140,.18);
+    border: 1px solid rgba(0,220,160,.50);
+    color: #00ffb0;
+    text-shadow: 0 0 12px rgba(0,200,140,.90);
+  }
+  .res-luna .res-fc-extra {
+    background: rgba(180,10,40,.18);
+    border: 1px solid rgba(220,30,70,.50);
+    color: #ff8899;
+    text-shadow: 0 0 12px rgba(200,20,60,.90);
+  }
+  .res-duo  .res-fc-extra {
+    background: linear-gradient(90deg,rgba(0,180,120,.15),rgba(160,10,60,.15));
+    border: 1px solid rgba(0,200,180,.40);
+    color: #a0ffee;
+    text-shadow: 0 0 12px rgba(0,200,180,.80);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <canvas id="gc"></canvas>
+
+  <!-- ① 上部バナー -->
+  <div id="banner">
+    <span id="banner-title">FULL COMBO!!</span>
+    <span id="banner-sub">- PERFECT ACHIEVEMENT -</span>
+  </div>
+
+  <!-- ② 下部：左LIZ ＋ 右スコア -->
+  <div id="lower">
+
+    <!-- 左：LIZキャラ -->
+    <div id="liz-zone">
+      <img id="liz" src="リズ　頑張ったね.png" alt="Liz">
+    </div>
+
+    <!-- 右：スコアパネル＋ボタン -->
+    <div id="right-col">
+
+      <div id="score-panel">
+
+        <!-- SCORE行 + Sバッジ を同じ行に -->
+        <div class="score-row">
+          <span class="score-label">SCORE</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="score-value gold" id="result-score">999,850</span>
+            <div id="rank-badge">S</div>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="score-row">
+          <span class="score-label">MAX COMBO</span>
+          <span class="score-value mint" id="result-combo">168</span>
+        </div>
+
+        <div class="score-row">
+          <span class="score-label">PERFECT+</span>
+          <span class="score-value white" id="result-perfect">98.7%</span>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="score-row">
+          <span class="score-label">FULL COMBO</span>
+          <span class="score-value green" id="result-fc">ACHIEVED</span>
+        </div>
+      </div>
+
+      <div id="buttons">
+        <a href="game_ui_v1.html"   class="btn btn-outline">RETRY</a>
+        <a href="game_home_v1.html" class="btn btn-filled">HOME</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ リゾナンスパネル（ストーリー連動） ══ -->
+  <div id="resonance-panel">
+    <div class="res-box" id="res-box">
+      <img class="res-icon" id="res-icon" src="" alt="">
+      <div class="res-text">
+        <div class="res-tag">
+          <span class="res-badge" id="res-badge">NOAH AI</span>
+          <span id="res-tag-text"></span>
+        </div>
+        <div class="res-main" id="res-main"></div>
+        <div class="res-sub"  id="res-sub"></div>
+        <div class="res-fc-extra" id="res-fc-extra"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ══ リゾナンスパネル — ストーリー連動 ══ */
+(function applyResonance() {
+  var songType  = localStorage.getItem('selectedSongType')  || 'riz';
+  var songTitle = localStorage.getItem('selectedSongTitle') || '';
+  var rawResult = localStorage.getItem('gameResult');
+  var isFC = false;
+  try { isFC = JSON.parse(rawResult).fullCombo === true; } catch(e){}
+
+  var box    = document.getElementById('res-box');
+  var icon   = document.getElementById('res-icon');
+  var badge  = document.getElementById('res-badge');
+  var tagTxt = document.getElementById('res-tag-text');
+  var main   = document.getElementById('res-main');
+  var sub    = document.getElementById('res-sub');
+  var fcEx   = document.getElementById('res-fc-extra');
+  var panel  = document.getElementById('resonance-panel');
+
+  if (!box || !panel) return;
+
+  var DATA = {
+    riz: {
+      cls:     'res-riz',
+      icon:    'リズ　頑張ったね.png',
+      badge:   'NOAH REPORT',
+      tag:     'RIZ RESONANCE — 天使の周波数',
+      main:    'リズの天使の声が、ネオンシティに届いた',
+      sub:     'あなたが刻んだリズムは、リズの歌声に乗って街全体へ。アーキテクツの支配プログラムが、また一つ書き換えられた。',
+      fc_main: 'FULL COMBO ★ 光の共鳴者',
+      fc_sub:  'あなたは「光の共鳴者」——フルコンボが達成された今、より多くの人々が支配から解放され、自分の意思を取り戻した。'
+    },
+    luna: {
+      cls:     'res-luna',
+      icon:    'ノア_怯えてる.png',
+      badge:   'NOAH ALERT',
+      tag:     'LUNA RESONANCE — 汚染システム亀裂',
+      main:    'ルナの呪縛の鎖に、亀裂が入った',
+      sub:     'あなたが刻んだ音符一つひとつが、アーキテクツの汚染システムへの負荷になる。ルナの中に眠る本来の声が——少しだけ、息をした。',
+      fc_main: 'FULL COMBO ★ ルナの本音',
+      fc_sub:  'フルコンボ達成——ルナが、アーキテクツに命じられていない音を、ほんの一瞬だけ歌った。その温かさは、本来の彼女の声だ。'
+    },
+    duo: {
+      cls:     'res-duo',
+      icon:    'リズ　ルナ　バトル.png',
+      badge:   'NOAH URGENT',
+      tag:     'DUAL RESONANCE — 対の周波数',
+      main:    '二人の声が共鳴した——世界が震えた',
+      sub:     'リズの天使の声と、ルナの本来の癒しの声。二人の周波数が交差した瞬間、アーキテクツの支配システム全体に激震が走った。',
+      fc_main: 'FULL COMBO ★ 奇跡の共鳴',
+      fc_sub:  'フルコンボ——二人の声が完全に重なった。ネオンシティ中の人々が、一瞬だけ自由な心を取り戻した。これが世界を変える力だ。'
+    }
+  };
+
+  var d = DATA[songType] || DATA['riz'];
+
+  // クラス適用
+  box.classList.add(d.cls);
+  // アイコン
+  icon.src = d.icon;
+  // テキスト
+  badge.textContent  = d.badge;
+  tagTxt.textContent = d.tag;
+  main.textContent   = d.main;
+  sub.textContent    = d.sub;
+
+  // フルコンボ時の追加
+  if (isFC) {
+    fcEx.style.display = 'block';
+    fcEx.innerHTML = '<span style="font-size:8px;letter-spacing:.20em;">' + d.fc_main + '</span><br><span style="font-family:\'Noto Sans JP\',sans-serif;font-size:8.5px;font-weight:400;letter-spacing:.03em;">' + d.fc_sub + '</span>';
+  }
+
+  panel.style.display = 'block';
+})();
+
+/* ── ゲーム結果をlocalStorageから読み込んで反映 ── */
+(function applyResult() {
+  var raw = localStorage.getItem('gameResult');
+  if (!raw) return;
+  try {
+    var r = JSON.parse(raw);
+    // SCORE
+    var sc = document.getElementById('result-score');
+    if (sc) sc.textContent = (r.score || 0).toLocaleString();
+    // MAX COMBO
+    var co = document.getElementById('result-combo');
+    if (co) co.textContent = r.maxCombo || 0;
+    // PERFECT+ (ベリーGUTTOの割合)
+    var pf = document.getElementById('result-perfect');
+    if (pf) pf.textContent = (r.perfectPct != null ? r.perfectPct : '--') + '%';
+    // FULL COMBO
+    var fc = document.getElementById('result-fc');
+    if (fc) fc.textContent = r.fullCombo ? 'ACHIEVED' : 'FAILED';
+    if (fc && !r.fullCombo) {
+      fc.style.color = '#ff6655';
+      fc.style.textShadow = '0 0 8px rgba(255,80,60,0.60)';
+    }
+    // RANK
+    var rb = document.getElementById('rank-badge');
+    if (rb) rb.textContent = r.rank || 'C';
+    // BANNER
+    var bn = document.getElementById('banner-title');
+    if (bn) bn.textContent = r.fullCombo ? 'FULL COMBO!!' : 'CLEAR!!';
+    var bs = document.getElementById('banner-sub');
+    if (bs) bs.textContent = r.fullCombo ? '- PERFECT ACHIEVEMENT -' : '- STAGE COMPLETE -';
+  } catch(e) {}
+})();
+
+(function () {
+  'use strict';
+
+  const canvas = document.getElementById('gc');
+  const ctx    = canvas.getContext('2d');
+  const app    = document.getElementById('app');
+
+  let W = 0, H = 0;
+
+  function resize() {
+    W = app.offsetWidth;
+    H = app.offsetHeight;
+    canvas.width  = W;
+    canvas.height = H;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ── Confetti ── */
+  const COLS = ['255,60,150','0,255,220','160,60,255','255,255,180','255,120,200'];
+
+  class Confetti {
+    constructor(fromTop) { this.reset(fromTop); }
+    reset(fromTop) {
+      this.x    = Math.random() * W;
+      this.y    = fromTop ? Math.random() * -H : Math.random() * H;
+      this.w    = 3 + Math.random() * 5;
+      this.h    = 7 + Math.random() * 10;
+      this.rot  = Math.random() * Math.PI * 2;
+      this.vx   = (Math.random() - 0.5) * 0.9;
+      this.vy   = 1.0 + Math.random() * 2.0;
+      this.vrot = (Math.random() - 0.5) * 0.08;
+      const r   = Math.random();
+      this.col  = r < 0.25 ? COLS[0] : r < 0.50 ? COLS[1] : r < 0.68 ? COLS[2] : r < 0.84 ? COLS[3] : COLS[4];
+      this.alpha= 0.72 + Math.random() * 0.28;
+    }
+    step() {
+      this.x += this.vx; this.y += this.vy; this.rot += this.vrot;
+      if (this.y > H + 20) { this.reset(true); this.y = -20; }
+      if (this.x < -20) this.x = W + 20;
+      if (this.x > W + 20) this.x = -20;
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rot);
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = `rgba(${this.col},1)`;
+      ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h);
+      ctx.restore();
+    }
+  }
+
+  const confetti = [];
+  for (let i = 0; i < 100; i++) confetti.push(new Confetti(true));
+
+  /* ── Expanding rings ── */
+  const RING_PERIOD  = 2800;
+  const RING_OFFSETS = [0, 700, 1400, 2100];
+
+  /* ── Sparkles ── */
+  class Sparkle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.r = 1 + Math.random() * 2.0;
+      this.phase = Math.random() * Math.PI * 2;
+      this.speed = 0.03 + Math.random() * 0.04;
+      const sc = Math.random(); this.col = sc < 0.30 ? '255,60,150' : sc < 0.55 ? '0,255,220' : sc < 0.75 ? '160,60,255' : '255,255,200';
+      this.life  = 0;
+      this.maxLife = 80 + Math.random() * 80;
+    }
+    step() {
+      this.phase += this.speed;
+      this.life++;
+      if (this.life > this.maxLife) {
+        this.x = Math.random()*W; this.y = Math.random()*H;
+        this.life = 0; this.maxLife = 80 + Math.random() * 80;
+      }
+    }
+    draw() {
+      const t   = this.life / this.maxLife;
+      const env = t < 0.2 ? t/0.2 : t > 0.8 ? (1-t)/0.2 : 1;
+      const br  = 0.5 + 0.5 * Math.sin(this.phase);
+      ctx.save();
+      ctx.globalAlpha = env * br * 0.80;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${this.col},1)`;
+      ctx.fill();
+      ctx.globalAlpha = env * br * 0.30;
+      ctx.strokeStyle = `rgba(${this.col},1)`;
+      ctx.lineWidth = 0.8;
+      const fl = this.r * 3;
+      ctx.beginPath();
+      ctx.moveTo(this.x-fl,this.y); ctx.lineTo(this.x+fl,this.y);
+      ctx.moveTo(this.x,this.y-fl); ctx.lineTo(this.x,this.y+fl);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  const sparkles = [];
+  for (let i = 0; i < 35; i++) {
+    sparkles.push(new Sparkle());
+    sparkles[i].life = Math.floor(Math.random() * sparkles[i].maxLife);
+  }
+
+  /* ══════════════════════════════════════
+     CYBER POP LIVE STAGE — near-future BG
+     ══════════════════════════════════════ */
+
+  // ── Stars
+  const _stars = [];
+  for (var _si = 0; _si < 90; _si++) {
+    var _sc = Math.random();
+    _stars.push({
+      x: Math.random(), y: Math.random() * 0.54,
+      r: 0.4 + Math.random() * 1.1,
+      bri: 0.35 + Math.random() * 0.65,
+      phase: Math.random() * Math.PI * 2,
+      col: _sc < 0.65 ? '230,240,255' : _sc < 0.82 ? '100,200,255' : '255,120,210'
+    });
+  }
+
+  // ── Cyber-city buildings
+  const _bldgs = [];
+  (function () {
+    var bx = 0;
+    var bcolors = ['0,220,255','255,60,150','180,80,255','0,255,180','255,200,0'];
+    while (bx < 1.04) {
+      var bw = 0.038 + Math.random() * 0.085;
+      _bldgs.push({
+        x: bx, w: bw,
+        h: 0.09 + Math.random() * 0.30,
+        wCols: 2 + Math.floor(Math.random() * 4),
+        wRows: 2 + Math.floor(Math.random() * 6),
+        wCol : bcolors[Math.floor(Math.random() * bcolors.length)],
+        seed : Math.random() * 100
+      });
+      bx += bw + 0.004 + Math.random() * 0.018;
+    }
+  })();
+
+  // ── Floating digital particles
+  const _parts = [];
+  var _partCols = ['255,60,150','0,230,255','180,60,255','255,220,40','0,255,160'];
+  for (var _pi = 0; _pi < 55; _pi++) {
+    _parts.push({
+      x: Math.random(), y: Math.random(),
+      vy: -(0.00025 + Math.random() * 0.00045),
+      sz: 1.2 + Math.random() * 2.5,
+      col: _partCols[_pi % _partCols.length],
+      phase: Math.random() * Math.PI * 2,
+      rot: Math.random() * Math.PI
+    });
+  }
+
+  function drawCyberBG(c, cW, cH, t) {
+    var horizY = cH * 0.52;
+    var vpX    = cW * 0.50;
+
+    /* ① Sky — light silver-cyber haze */
+    var sky = c.createLinearGradient(0, 0, 0, horizY);
+    sky.addColorStop(0,   '#d8ddf2');
+    sky.addColorStop(0.35,'#cdd3ee');
+    sky.addColorStop(0.7, '#c0c8e8');
+    sky.addColorStop(1,   '#b8c0e4');
+    c.fillStyle = sky; c.fillRect(0, 0, cW, horizY);
+
+    /* ② Light sky glow orbs (星の代わりにうっすらした光) */
+    _stars.forEach(function (s) {
+      var tw = 0.15 + 0.15 * Math.sin(t * 1.9 + s.phase);
+      c.save();
+      c.globalAlpha = tw;
+      var sg = c.createRadialGradient(s.x*cW, s.y*cH, 0, s.x*cW, s.y*cH, s.r*5);
+      sg.addColorStop(0, 'rgba(120,160,255,0.5)');
+      sg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = sg;
+      c.beginPath(); c.arc(s.x*cW, s.y*cH, s.r*5, 0, Math.PI*2); c.fill();
+      c.restore();
+    });
+
+    /* ③ Cyber city silhouette + neon windows */
+    _bldgs.forEach(function (b) {
+      var bx = b.x*cW, bw = b.w*cW;
+      var by = horizY - b.h*cH, bh = b.h*cH;
+      // body (light bg → dark silhouette)
+      c.fillStyle = '#4a4870';
+      c.fillRect(bx, by, bw, bh+1);
+      // rooftop neon edge
+      var rg = c.createLinearGradient(bx, by, bx, by+6);
+      rg.addColorStop(0, 'rgba('+b.wCol+',0.80)');
+      rg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = rg; c.fillRect(bx, by, bw, 6);
+      // antenna blink
+      var abli = 0.5 + 0.5*Math.sin(t*2.2 + b.seed);
+      c.save(); c.globalAlpha = abli * 0.9;
+      c.fillStyle = 'rgba('+b.wCol+',1)';
+      c.fillRect(bx+bw/2-1, by-5, 2, 5);
+      c.restore();
+      // windows grid
+      var ww = (bw-3)/b.wCols, wh = 3.5;
+      for (var row=0; row<b.wRows; row++) {
+        for (var col=0; col<b.wCols; col++) {
+          var lit = Math.sin(t*0.28 + b.seed + row*1.8 + col*2.5) > 0.1;
+          if (!lit) continue;
+          var wy = by + bh - (row+1)*7;
+          if (wy < by+4) continue;
+          c.save();
+          c.globalAlpha = 0.45 + 0.40*Math.sin(t*0.55+row+col+b.seed);
+          c.fillStyle = 'rgba('+b.wCol+',1)';
+          c.fillRect(bx+1.5+col*ww, wy, ww-1.5, wh);
+          c.restore();
+        }
+      }
+    });
+
+    /* ④ Horizon neon glow bar */
+    var hgr = c.createLinearGradient(0, horizY-3, 0, horizY+8);
+    hgr.addColorStop(0,   'rgba(0,220,255,0.90)');
+    hgr.addColorStop(0.3, 'rgba(255,60,150,0.70)');
+    hgr.addColorStop(1,   'rgba(0,0,0,0)');
+    c.fillStyle = hgr; c.fillRect(0, horizY-3, cW, 11);
+
+    /* ⑤ Floor — light silver base */
+    var flr = c.createLinearGradient(0, horizY, 0, cH);
+    flr.addColorStop(0,   '#d0d5ee');
+    flr.addColorStop(0.5, '#c8cde8');
+    flr.addColorStop(1,   '#bcc2e0');
+    c.fillStyle = flr; c.fillRect(0, horizY, cW, cH-horizY);
+
+    /* ⑥ Perspective grid — vertical fan lines */
+    var numV = 24;
+    c.save();
+    for (var vi=0; vi<=numV; vi++) {
+      var btX = (vi/numV)*cW;
+      var isPinkV = (vi % 6 === 0);
+      var alphaV  = 0.18 + 0.12*Math.abs(Math.sin(vi*0.55));
+      c.strokeStyle = isPinkV ? 'rgba(200,0,120,'+(alphaV*1.8)+')' : 'rgba(20,80,200,'+alphaV+')';
+      c.lineWidth   = isPinkV ? 1.0 : 0.5;
+      c.beginPath(); c.moveTo(vpX, horizY); c.lineTo(btX, cH); c.stroke();
+    }
+    c.restore();
+
+    /* ⑦ Perspective grid — scrolling horizontal lines */
+    var numH = 16, gridSpd = 0.055;
+    c.save();
+    for (var hi=0; hi<numH; hi++) {
+      var raw   = ((hi/numH) + (t*gridSpd) % (1/numH)*numH/numH) % 1;
+      var depth = raw;
+      var perspY= horizY + (cH-horizY)*(1-Math.pow(1-depth,2.8));
+      var alphaH= 0.12 + depth*0.40;
+      var isPinkH = (hi % 4 === 0);
+      c.strokeStyle = isPinkH ? 'rgba(200,0,120,'+(alphaH*1.4)+')' : 'rgba(20,80,200,'+alphaH+')';
+      c.lineWidth   = isPinkH ? 0.9 : 0.45;
+      c.beginPath(); c.moveTo(0,perspY); c.lineTo(cW,perspY); c.stroke();
+    }
+    c.restore();
+
+    /* ⑧ Grid floor glow line at horizon */
+    var fgp = 0.65 + 0.35*Math.sin(t*2.0);
+    var fgl = c.createLinearGradient(0,horizY,cW,horizY);
+    fgl.addColorStop(0,    'rgba(255,60,150,0)');
+    fgl.addColorStop(0.18, 'rgba(255,60,150,'+fgp+')');
+    fgl.addColorStop(0.50, 'rgba(0,240,255,'+fgp+')');
+    fgl.addColorStop(0.82, 'rgba(180,60,255,'+fgp+')');
+    fgl.addColorStop(1,    'rgba(180,60,255,0)');
+    c.fillStyle = fgl; c.fillRect(0, horizY-1, cW, 2.5);
+    // floor reflection
+    var ref = c.createLinearGradient(0,horizY,0,horizY+45);
+    ref.addColorStop(0, 'rgba(0,230,255,'+(fgp*0.20)+')');
+    ref.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = ref; c.fillRect(0,horizY,cW,45);
+
+    /* ⑨ Laser beams — thin & precise */
+    var laserCols = ['255,60,150','0,230,255','200,70,255','255,255,180','0,255,160','255,100,60'];
+    c.save();
+    for (var li=0; li<6; li++) {
+      var lox   = (li+0.5)/6*cW;
+      var lsw   = Math.sin(t*0.85+li*1.35)*cW*0.10;
+      var ltx   = lox+lsw;
+      var lc    = laserCols[li%laserCols.length];
+      var lalpha= 0.50+0.40*Math.abs(Math.sin(t*1.6+li*0.9));
+      c.strokeStyle = 'rgba('+lc+','+lalpha+')';
+      c.lineWidth   = 0.7;
+      c.shadowBlur  = 8;
+      c.shadowColor = 'rgba('+lc+',0.90)';
+      c.beginPath(); c.moveTo(lox,0); c.lineTo(ltx, horizY*0.88); c.stroke();
+    }
+    c.shadowBlur = 0;
+    c.restore();
+
+    /* ⑩ Digital particles — floating diamonds */
+    _parts.forEach(function (p) {
+      p.y += p.vy; if (p.y < -0.02) p.y = 1.02;
+      p.rot += 0.012;
+      var bri2 = 0.35+0.65*Math.abs(Math.sin(t*1.3+p.phase));
+      c.save();
+      c.globalAlpha = bri2*0.72;
+      c.translate(p.x*cW, p.y*cH);
+      c.rotate(p.rot);
+      c.fillStyle = 'rgba('+p.col+',1)';
+      c.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz);
+      c.restore();
+    });
+
+    /* ⑪ Holographic scanner rings (left / Liz area) */
+    var ringCX = cW*0.21, ringCY = cH*0.62;
+    for (var ri=0; ri<4; ri++) {
+      var rAngle = t*(0.35+ri*0.13)+ri*Math.PI/4;
+      var rR     = 35+ri*25+Math.sin(t*0.9+ri)*6;
+      var rAlpha = 0.18-ri*0.03;
+      c.save();
+      c.globalAlpha = rAlpha;
+      c.translate(ringCX, ringCY);
+      c.rotate(rAngle);
+      c.strokeStyle = ri%2===0 ? 'rgba(0,220,255,0.9)' : 'rgba(255,60,150,0.9)';
+      c.lineWidth   = 0.8;
+      var segs = 6;
+      for (var seg=0; seg<segs; seg++) {
+        var sa = (seg/segs)*Math.PI*2;
+        var ea = sa+Math.PI/8;
+        c.beginPath(); c.arc(0,0,rR,sa,ea); c.stroke();
+      }
+      c.restore();
+    }
+    // crosshair lines
+    c.save();
+    c.globalAlpha = 0.10;
+    c.strokeStyle = 'rgba(0,220,255,1)';
+    c.lineWidth   = 0.5;
+    c.beginPath(); c.moveTo(ringCX-70,ringCY); c.lineTo(ringCX+70,ringCY); c.stroke();
+    c.beginPath(); c.moveTo(ringCX,ringCY-70); c.lineTo(ringCX,ringCY+70); c.stroke();
+    c.restore();
+
+    /* ⑫ Scanline overlay (light bg version) */
+    c.save();
+    c.globalAlpha = 0.06;
+    for (var sy=0; sy<cH; sy+=3) {
+      c.fillStyle = 'rgba(80,80,160,1)';
+      c.fillRect(0,sy,cW,1);
+    }
+    c.restore();
+  }
+
+  /* ── Draw loop ── */
+  let pulseT = 0;
+
+  function draw() {
+    pulseT += 0.016;
+    ctx.clearRect(0, 0, W, H);
+
+    // Cyber-pop near-future stage
+    drawCyberBG(ctx, W, H, pulseT);
+
+    // Expanding rings — centered on LIZ character area (left 42%)
+    const cx = W * 0.21, cy = H * 0.50;
+
+    // Expanding rings (concert colors)
+    RING_OFFSETS.forEach(function(offset) {
+      const t      = ((performance.now() + offset) % RING_PERIOD) / RING_PERIOD;
+      const radius = t * Math.max(W, H) * 0.75;
+      const alpha  = (1 - t) * 0.14;
+      if (alpha < 0.005) return;
+      const hue = (offset / 700) % 3; // cycle through pink/cyan/purple
+      const rc  = hue < 1 ? `255,60,150` : hue < 2 ? `0,220,255` : `160,60,255`;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(${rc},${alpha})`;
+      ctx.lineWidth   = 1.2 + (1-t) * 2.0;
+      ctx.stroke();
+      if (radius > 15) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.90, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(255,255,255,${alpha*0.30})`;
+        ctx.lineWidth   = 0.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    // Confetti
+    confetti.forEach(function(c) { c.step(); c.draw(); });
+
+    // Sparkles
+    sparkles.forEach(function(s) { s.step(); s.draw(); });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
+</script>
+</body>
+</html>

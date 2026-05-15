@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>メイちゃん</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{width:100vw;height:100vh;display:flex;align-items:flex-start;justify-content:center;background:#000;overflow:hidden;}
+body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;position:relative;background:linear-gradient(160deg,#FFF0FF 0%,#F0F8FF 35%,#FFFFF0 65%,#FFF5FF 100%);}
+.ls{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  writing-mode:horizontal-tb;
+  display:flex;flex-direction:column;
+  background:linear-gradient(160deg,#FFF0FF 0%,#FFF0F8 50%,#FFF5FF 100%);
+}
+.ls::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 20% 40%,rgba(255,0,180,0.06) 0%,transparent 50%),
+             radial-gradient(ellipse at 80% 60%,rgba(255,100,200,0.04) 0%,transparent 50%);}
+.glitch{position:absolute;inset:0;z-index:100;background:#FFF0FF;animation:glitchIn 0.8s ease forwards;pointer-events:none;}
+@keyframes glitchIn{0%{opacity:1;}20%{transform:translateX(-6px);}30%{transform:translateX(4px);}45%{transform:none;opacity:1;}100%{opacity:0;}}
+.header{flex-shrink:0;height:56px;display:flex;align-items:center;padding:0 20px;gap:14px;border-bottom:2px solid rgba(255,0,180,0.15);background:rgba(255,255,255,0.97);position:relative;z-index:10;}
+.back-btn{font-family:'Orbitron',sans-serif;font-size:9px;color:#00CCFF;letter-spacing:0.1em;border:1.5px solid rgba(0,200,255,0.5);padding:4px 10px;border-radius:4px;background:rgba(0,200,255,0.06);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.header-title{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(9px,2vh,14px);color:#1a0030;letter-spacing:0.2em;text-shadow:0 0 12px rgba(255,0,180,0.35);}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 20px;position:relative;z-index:10;scrollbar-width:none;}
+.scroll-area::-webkit-scrollbar{display:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+.section-label{font-family:'Orbitron',sans-serif;font-size:7px;color:rgba(220,0,160,0.8);letter-spacing:0.3em;margin-bottom:8px;margin-top:4px;}
+.card{background:rgba(255,255,255,0.62);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:16px;border:1.5px solid rgba(255,255,255,0.85);box-shadow:0 6px 24px rgba(255,0,180,0.1),inset 0 1px 0 rgba(255,255,255,0.9);padding:14px 16px;margin-bottom:10px;opacity:0;animation:fadeUp 0.5s ease forwards;}
+.card:nth-child(1){animation-delay:0.08s;}.card:nth-child(2){animation-delay:0.16s;}.card:nth-child(3){animation-delay:0.24s;}.card:nth-child(4){animation-delay:0.32s;}.card:nth-child(5){animation-delay:0.40s;}.card:nth-child(6){animation-delay:0.48s;}
+
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.card-icon-wrap{width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,0,180,0.08);border-radius:8px;border:1px solid rgba(255,0,180,0.18);}
+.card-icon-wrap svg{width:16px;height:16px;}
+.card-label{font-family:'Orbitron',sans-serif;font-size:8px;color:rgba(220,0,160,0.85);letter-spacing:0.18em;}
+.card-text{font-family:'Noto Sans JP',sans-serif;font-size:11px;color:rgba(30,10,40,0.78);line-height:1.75;font-weight:300;}
+
+/* プロフィールグリッド */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.profile-item{background:rgba(255,0,180,0.05);border-radius:10px;padding:8px 10px;border:1px solid rgba(255,0,180,0.1);}
+.profile-key{font-family:'Orbitron',sans-serif;font-size:6.5px;color:rgba(220,0,160,0.65);letter-spacing:0.1em;margin-bottom:4px;}
+.profile-val{font-family:'Noto Sans JP',sans-serif;font-size:10px;color:rgba(30,10,40,0.8);font-weight:400;line-height:1.4;}
+
+/* タグ */
+.tag{display:inline-block;background:rgba(255,0,180,0.07);color:rgba(200,0,140,0.9);font-family:'Nunito',sans-serif;font-size:9px;border-radius:20px;padding:2px 9px;margin:3px 2px 0;border:1px solid rgba(255,0,180,0.18);}
+
+/* TikTokボタン */
+.tiktok-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;padding:10px 16px;border-radius:12px;background:#010101;border:2px solid transparent;background-clip:padding-box;box-shadow:0 0 0 2px #EE1D52, 0 0 0 3.5px #69C9D0, 0 4px 16px rgba(0,0,0,0.3);cursor:pointer;text-decoration:none;}
+.tiktok-btn-icon{width:18px;height:18px;flex-shrink:0;}
+.tiktok-btn-text{font-family:'Nunito',sans-serif;font-weight:700;font-size:11px;color:#ffffff;letter-spacing:0.05em;}
+.tiktok-btn-sub{font-family:'Noto Sans JP',sans-serif;font-size:9px;color:rgba(255,255,255,0.6);}
+</style>
+<script>
+(function(){
+  if('ontouchstart' in window && window.screen.width<=1024) return;
+  var PW=844, PH=390;
+  function apply(){
+    var ls=document.querySelector('.ls');
+    if(!ls) return;
+    var scale=Math.min((window.innerWidth-20)/PW,(window.innerHeight-20)/PH);
+    var bg='linear-gradient(135deg,#fce8f8 0%,#e8f4ff 45%,#f8fff0 75%,#fff6e8 100%)';
+    document.documentElement.style.cssText='margin:0;padding:0;width:100vw;height:100vh;display:flex;align-items:flex-start;justify-content:center;background:#000;overflow:hidden;';
+    document.body.style.cssText='margin:0;padding:0;width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;position:relative;background:'+bg+';';
+    ls.style.cssText=ls.style.cssText.replace(/position\s*:\s*[^;]+;?/g,'').replace(/top\s*:\s*[^;]+;?/g,'').replace(/left\s*:\s*[^;]+;?/g,'').replace(/width\s*:\s*[^;]+;?/g,'').replace(/height\s*:\s*[^;]+;?/g,'').replace(/transform\s*:\s*[^;]+;?/g,'').replace(/transform-origin\s*:\s*[^;]+;?/g,'');
+    ls.style.position='absolute';ls.style.width='100%';ls.style.height='100%';
+    ls.style.transform='none';
+    ls.style.flexShrink='0';ls.style.overflow='hidden';
+  }
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',apply):apply();
+  window.addEventListener('resize',apply);
+})();
+</script>
+<style>.ls{background:url('ポートフォリオ用　背景.png')center/cover no-repeat!important;}.ls::before{background:none!important;}</style>
+</head>
+<body>
+<div class="ls">
+  <div class="glitch"></div>
+  <div class="header">
+    <div class="back-btn" onclick="location.href='profile.html'" style="cursor:pointer;">◀ BACK</div>
+    <div class="header-title">MEI-CHAN</div>
+  </div>
+  <div class="scroll-area">
+
+    <!-- プロフィール -->
+    <div class="section-label">PROFILE</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(220,0,160,0.85)" stroke-width="1.8" stroke-linecap="round">
+            <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5M14 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5"/>
+            <path d="M8 14v.5M16 14v.5M11.25 16.25h1.5L12 17l-.75-.75z"/>
+            <path d="M4.42 11.247A13.152 13.152 0 004 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309"/>
+          </svg>
+        </div>
+        <div class="card-label">MEI-CHAN INFO</div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item">
+          <div class="profile-key">BREED</div>
+          <div class="profile-val">ウェルシュ・コーギー・ペンブローク</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-key">SEX</div>
+          <div class="profile-val">メス（女の子）</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-key">BIRTHDAY</div>
+          <div class="profile-val">2025.01.24</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-key">COLOR</div>
+          <div class="profile-val">レッド＆ホワイト</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-key">RESCUE</div>
+          <div class="profile-val">愛知県小牧シェルター</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-key">FAMILY</div>
+          <div class="profile-val">2025.05.03〜</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 性格 -->
+    <div class="section-label">PERSONALITY</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(220,0,160,0.85)" stroke-width="1.8" stroke-linecap="round">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </div>
+        <div class="card-label">CHARACTER</div>
+      </div>
+      <div class="card-text">見た目に反してビビりですが、人もわんちゃんも猫ちゃんも大好き。思いやりがあり、喧嘩しているお友達の間に入る子。噛まれてもやり返さないし、人にも噛みません。あまがみはパパにだけ。撫でられるのとマッサージが大好きで、ヘソ天っ子です。</div>
+      <div style="margin-top:8px;">
+        <span class="tag">ビビりさん</span><span class="tag">思いやり</span><span class="tag">人懐っこい</span><span class="tag">ヘソ天</span>
+      </div>
+    </div>
+
+    <!-- 好きなこと -->
+    <div class="section-label">FAVORITES</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(220,0,160,0.85)" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9" stroke-width="3"/>
+            <line x1="15" y1="9" x2="15.01" y2="9" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="card-label">WHAT SHE LOVES</div>
+      </div>
+      <div class="card-text">散歩とドッグランでお友達と追いかけっこ・かくれんぼが大好き。小型犬・中型犬・大型犬みんな大好き。家ではおもちゃを持ってきては遊んでアピール。ダッシュはコーギーロケット。くん活大好き、匂いつけは顔でスリスリします。</div>
+      <div style="margin-top:8px;">
+        <span class="tag">ドッグラン</span><span class="tag">追いかけっこ</span><span class="tag">かくれんぼ</span><span class="tag">コーギーロケット</span><span class="tag">くん活</span>
+      </div>
+    </div>
+
+    <!-- お気に入り -->
+    <div class="section-label">OBSESSIONS</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(220,0,160,0.85)" stroke-width="1.8" stroke-linecap="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <div class="card-label">FAVORITES</div>
+      </div>
+      <div class="card-text">タオル生地と毛布生地が大好き。おもちゃは赤色が一番のお気に入り。ロープとボールに夢中。芝生・砂・雪道が大好き。生まれつき腰と腸が弱いですが、病院のドッグフードを食べて毎日元気いっぱいです。</div>
+      <div style="margin-top:8px;">
+        <span class="tag">赤いおもちゃ</span><span class="tag">ロープ</span><span class="tag">ボール</span><span class="tag">芝生・砂・雪</span><span class="tag">タオル・毛布</span>
+      </div>
+    </div>
+
+    <!-- TikTok -->
+    <div class="section-label">TIKTOK</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(220,0,160,0.85)" stroke-width="1.8" stroke-linecap="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+            <polygon points="10 8 16 11 10 14 10 8" fill="rgba(220,0,160,0.3)" stroke="rgba(220,0,160,0.85)"/>
+          </svg>
+        </div>
+        <div class="card-label">SOCIAL</div>
+      </div>
+      <div class="card-text">メイちゃんの日常をTikTokで公開中！あげたい時に動画をアップしています。日常から旅まで動画がアップされています。ご興味ありましたらぜひご覧ください。</div>
+      <!-- TikTok URL をここに入力してください -->
+      <a class="tiktok-btn" href="https://tiktok.com/@meichan2025" target="_blank">
+        <svg class="tiktok-btn-icon" viewBox="0 0 24 24" fill="white">
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/>
+        </svg>
+        <div>
+          <div class="tiktok-btn-text">TikTokでメイちゃんを見る</div>
+          <div class="tiktok-btn-sub">日常・お散歩・旅の動画を公開中</div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

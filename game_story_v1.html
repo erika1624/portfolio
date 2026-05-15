@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>NEON BEAT — STORY</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+JP:wght@300;400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{width:100vw;height:100vh;display:flex;align-items:flex-start;justify-content:center;background:#000;overflow:hidden;}
+body{width:min(100vw,844px);height:390px;max-height:390px;overflow:hidden;position:relative;background:#03060f;font-family:'Noto Sans JP',sans-serif;}
+
+#bg-cv{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+#app{position:relative;width:100%;height:100%;z-index:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── ヘッダー ── */
+#hdr{
+  flex-shrink:0;height:44px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;
+  background:rgba(0,4,16,.92);
+  border-bottom:1px solid rgba(0,220,200,.30);
+  box-shadow:0 0 18px rgba(0,200,220,.25),0 2px 20px rgba(0,180,120,.15);
+}
+#hdr-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:13px;
+  color:#00eedd;letter-spacing:.18em;
+  text-shadow:0 0 10px rgba(0,230,220,.85),0 0 24px rgba(0,180,200,.50);
+}
+#hdr-sub{font-size:9px;color:rgba(0,220,200,.60);letter-spacing:.10em;font-family:'Share Tech Mono',monospace;}
+#back-btn{
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:9px;
+  color:#00e8a0;border:1px solid rgba(0,220,160,.55);
+  background:rgba(0,200,140,.10);border-radius:6px;
+  padding:4px 10px;cursor:pointer;letter-spacing:.06em;
+  text-shadow:0 0 8px rgba(0,220,160,.80);
+  box-shadow:0 0 8px rgba(0,200,140,.25);
+  text-decoration:none;transition:all .15s;
+}
+#back-btn:hover{background:rgba(0,200,140,.22);box-shadow:0 0 16px rgba(0,200,140,.50);}
+
+/* ── チャプタータブ ── */
+#ch-nav{
+  flex-shrink:0;height:32px;
+  display:flex;align-items:center;gap:4px;
+  padding:0 10px;overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid rgba(0,180,200,.15);
+  background:rgba(0,2,12,.80);
+}
+#ch-nav::-webkit-scrollbar{display:none;}
+.ch-tab{
+  flex-shrink:0;height:22px;padding:0 10px;border-radius:11px;
+  font-family:'Orbitron',sans-serif;font-size:8px;font-weight:700;
+  cursor:pointer;letter-spacing:.05em;border:1px solid transparent;
+  transition:all .2s;white-space:nowrap;
+}
+.ch-tab.active{
+  background:rgba(0,220,200,.18);color:#00eedd;
+  border-color:rgba(0,220,200,.55);
+  box-shadow:0 0 10px rgba(0,200,220,.40);
+  text-shadow:0 0 8px rgba(0,230,220,.80);
+}
+.ch-tab:not(.active){color:rgba(150,180,200,.55);background:transparent;border-color:rgba(100,140,180,.20);}
+.ch-tab:not(.active):hover{color:rgba(0,220,200,.75);border-color:rgba(0,180,200,.35);}
+
+/* ── メインコンテンツ ── */
+#main{
+  flex:1;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(0,200,220,.35) transparent;
+}
+#main::-webkit-scrollbar{width:3px;}
+#main::-webkit-scrollbar-track{background:transparent;}
+#main::-webkit-scrollbar-thumb{background:rgba(0,200,220,.35);border-radius:2px;}
+
+/* ── ページ ── */
+.page{display:none;padding:14px 14px 20px;position:relative;}
+.page.active{display:block;}
+/* 右寄せ背景（Ch1/2/3） */
+.page-bg-img{
+  position:absolute;top:0;right:0;width:50%;height:100%;
+  object-fit:contain;object-position:top right;
+  opacity:.11;pointer-events:none;z-index:0;
+}
+/* 中央配置背景（Ch4） */
+.page-bg-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:72%;height:100%;
+  object-fit:contain;object-position:center center;
+  opacity:.16;pointer-events:none;z-index:0;
+  filter:brightness(1.6) saturate(1.2);
+}
+/* ルナページ専用：明るく */
+.luna-bg-img{
+  position:absolute;top:0;right:0;width:50%;height:100%;
+  object-fit:contain;object-position:top right;
+  opacity:.18;pointer-events:none;z-index:0;
+  filter:brightness(1.8) contrast(1.0) saturate(0.8);
+}
+.page > *:not(.page-bg-img):not(.page-bg-center):not(.luna-bg-img){position:relative;z-index:1;}
+
+/* ── セクションタイトル ── */
+.sec-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:11px;
+  letter-spacing:.18em;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-title::before,.sec-title::after{content:'';flex:1;height:1px;}
+
+/* PROLOGUE */
+#pg-prologue .sec-title{color:#00eedd;}
+#pg-prologue .sec-title::before,#pg-prologue .sec-title::after{background:linear-gradient(90deg,transparent,rgba(0,220,200,.50));}
+/* CH1 */
+#pg-ch1 .sec-title{color:#00e8a0;}
+#pg-ch1 .sec-title::before,#pg-ch1 .sec-title::after{background:linear-gradient(90deg,transparent,rgba(0,220,160,.50));}
+/* CH2 */
+#pg-ch2 .sec-title{color:#ff5566;}
+#pg-ch2 .sec-title::before,#pg-ch2 .sec-title::after{background:linear-gradient(90deg,transparent,rgba(200,30,60,.50));}
+/* CH3 */
+#pg-ch3 .sec-title{color:#00eedd;}
+#pg-ch3 .sec-title::before,#pg-ch3 .sec-title::after{background:linear-gradient(90deg,transparent,rgba(0,200,220,.50));}
+/* CH4 */
+#pg-ch4 .sec-title{color:#ff9988;}
+#pg-ch4 .sec-title::before,#pg-ch4 .sec-title::after{background:linear-gradient(90deg,transparent,rgba(255,80,80,.40));}
+/* CH5 */
+#pg-ch5 .sec-title{color:#ffd700;}
+#pg-ch5 .sec-title::before,#pg-ch5 .sec-title::after{background:linear-gradient(90deg,transparent,rgba(255,200,0,.40));}
+
+/* ── プロローグボックス ── */
+.prologue-box{
+  background:rgba(0,10,30,.80);border:1px solid rgba(0,180,220,.25);
+  border-radius:10px;padding:14px;margin-bottom:12px;
+  box-shadow:0 0 14px rgba(0,150,200,.12) inset;
+}
+.prologue-box .year{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,200,220,.70);letter-spacing:.15em;margin-bottom:6px;}
+.prologue-box p{font-size:11px;color:rgba(200,230,255,.82);line-height:1.90;letter-spacing:.04em;}
+.prologue-box p+p{margin-top:8px;}
+
+/* ── テキストカラー ── */
+.hl{color:#00eedd;font-weight:700;}
+.hl-riz{color:#00e8a0;font-weight:700;}
+.hl-luna{color:#ff5566;font-weight:700;}
+.hl-gold{color:#ffd700;font-weight:700;}
+.hl-w{color:#ffffff;font-weight:700;}
+.hl-red{color:#ff3344;font-weight:700;}
+
+/* ── キャラカード（左画像 右テキスト） ── */
+.char-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.char-card{
+  display:flex;align-items:center;gap:12px;
+  border-radius:10px;padding:10px 12px;
+  border:1px solid transparent;position:relative;overflow:hidden;
+  cursor:pointer;transition:transform .15s;
+}
+.char-card:hover{transform:translateX(3px);}
+.char-card.riz{background:linear-gradient(145deg,rgba(0,220,160,.12),rgba(0,180,120,.08));border-color:rgba(0,200,140,.40);box-shadow:0 0 12px rgba(0,200,140,.18) inset;}
+.char-card.luna{background:linear-gradient(145deg,rgba(200,20,50,.14),rgba(255,80,50,.08));border-color:rgba(220,30,60,.40);box-shadow:0 0 12px rgba(200,20,50,.18) inset;}
+.char-card.noah{background:linear-gradient(145deg,rgba(0,200,220,.10),rgba(100,180,255,.08));border-color:rgba(0,200,220,.38);box-shadow:0 0 12px rgba(0,180,220,.15) inset;}
+.char-img-wrap{width:62px;height:62px;flex-shrink:0;border-radius:8px;overflow:hidden;}
+.char-img-wrap img{width:100%;height:100%;object-fit:cover;object-position:top center;}
+.char-card.riz .char-img-wrap{border:1.5px solid rgba(0,220,160,.50);box-shadow:0 0 10px rgba(0,200,140,.50);}
+.char-card.luna .char-img-wrap{border:1.5px solid rgba(220,30,60,.50);box-shadow:0 0 10px rgba(200,20,50,.50);}
+.char-card.noah .char-img-wrap{border:1.5px solid rgba(0,200,220,.50);box-shadow:0 0 10px rgba(0,180,220,.50);}
+.char-info{flex:1;}
+.char-name{font-family:'Orbitron',sans-serif;font-weight:900;font-size:13px;letter-spacing:.12em;margin-bottom:3px;}
+.char-card.riz .char-name{color:#00e8a0;text-shadow:0 0 10px rgba(0,220,160,.70);}
+.char-card.luna .char-name{color:#ff5566;text-shadow:0 0 10px rgba(200,30,60,.70);}
+.char-card.noah .char-name{color:#00ddee;text-shadow:0 0 10px rgba(0,200,220,.70);}
+.char-role{font-size:9px;color:rgba(180,210,240,.60);letter-spacing:.04em;line-height:1.5;margin-bottom:5px;}
+.char-power{font-size:7.5px;padding:2px 8px;border-radius:8px;display:inline-block;font-family:'Share Tech Mono',monospace;letter-spacing:.06em;font-weight:700;}
+.char-card.riz .char-power{background:rgba(0,200,140,.18);color:#00e8a0;border:1px solid rgba(0,200,140,.40);}
+.char-card.luna .char-power{background:rgba(200,20,50,.18);color:#ff6677;border:1px solid rgba(200,20,50,.35);}
+.char-card.noah .char-power{background:rgba(0,180,220,.15);color:#44ddee;border:1px solid rgba(0,180,220,.32);}
+.char-arrow{font-size:10px;flex-shrink:0;}
+.char-card.riz .char-arrow{color:rgba(0,200,140,.50);}
+.char-card.luna .char-arrow{color:rgba(200,40,60,.50);}
+.char-card.noah .char-arrow{color:rgba(0,200,220,.50);}
+
+/* ── ノア警告ボックス ── */
+@keyframes warnBorderPulse{
+  0%,100%{border-color:rgba(255,100,0,.50);box-shadow:0 0 10px rgba(255,80,0,.22) inset,0 0 14px rgba(255,80,0,.18);}
+  50%{border-color:rgba(255,200,0,.95);box-shadow:0 0 30px rgba(255,150,0,.55) inset,0 0 40px rgba(255,120,0,.45);}
+}
+@keyframes warnTextBlink{0%,100%{opacity:1;}45%{opacity:.30;}55%{opacity:.30;}}
+.noah-warning{
+  background:rgba(0,12,20,.92);border:2px solid rgba(255,100,0,.50);
+  border-radius:8px;padding:10px 12px;margin:10px 0;
+  animation:warnBorderPulse 1.6s ease-in-out infinite;
+  display:flex;align-items:center;gap:10px;overflow:hidden;
+}
+.noah-warn-text{flex:1;font-family:'Share Tech Mono',monospace;font-size:10px;color:#00eedd;letter-spacing:.06em;line-height:1.85;}
+.warn-hdr{font-weight:700;font-size:10px;letter-spacing:.12em;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.warn-badge{background:#ff4400;color:#fff;font-size:8px;font-weight:900;padding:1px 5px;border-radius:3px;letter-spacing:.08em;animation:warnTextBlink 1.2s step-end infinite;}
+.noah-warn-img{width:68px;flex-shrink:0;filter:drop-shadow(0 0 10px rgba(255,100,0,.70));}
+
+/* ── ルナ警告 ── */
+@keyframes lunaWarnPulse{
+  0%,100%{border-color:rgba(220,30,60,.45);box-shadow:0 0 8px rgba(200,20,50,.20) inset;}
+  50%{border-color:rgba(255,80,100,.92);box-shadow:0 0 28px rgba(200,20,50,.50) inset,0 0 30px rgba(180,10,40,.35);}
+}
+
+/* ── ストーリーブロック ── */
+.story-block{
+  background:rgba(0,6,20,.82);border-radius:10px;
+  border-left:3px solid transparent;
+  padding:12px 14px;margin-bottom:10px;position:relative;
+}
+.story-block.riz-block{border-left-color:#00e8a0;box-shadow:-2px 0 12px rgba(0,200,140,.22);}
+.story-block.luna-block{border-left-color:#dd1133;box-shadow:-2px 0 12px rgba(200,20,50,.22);}
+.story-block.noah-block{border-left-color:#00ccdd;box-shadow:-2px 0 12px rgba(0,200,220,.22);}
+.story-block.secret-block{border-left-color:#ffd700;box-shadow:-2px 0 12px rgba(255,200,0,.22),0 0 20px rgba(255,180,0,.08) inset;background:rgba(10,8,0,.88);}
+.story-block.conflict-block{border-left:none;border:1px solid rgba(255,60,50,.35);box-shadow:0 0 16px rgba(200,20,50,.15) inset;background:linear-gradient(135deg,rgba(255,20,40,.06),rgba(200,0,20,.04));}
+.block-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.14em;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.block-label::after{content:'';flex:1;height:1px;opacity:.35;}
+.riz-block .block-label{color:#80ffd0;} .riz-block .block-label::after{background:#00e8a0;}
+.luna-block .block-label{color:#ff8899;} .luna-block .block-label::after{background:#dd1133;}
+.noah-block .block-label{color:#44ddee;} .noah-block .block-label::after{background:#00ccdd;}
+.secret-block .block-label{color:#ffd700;} .secret-block .block-label::after{background:#ffd700;}
+.conflict-block .block-label{color:#ff9988;} .conflict-block .block-label::after{background:#ff5544;}
+.block-text{font-size:11px;color:rgba(200,225,255,.80);line-height:1.92;letter-spacing:.04em;}
+.block-text+.block-text{margin-top:8px;}
+
+/* ── タイムライン ── */
+.timeline{margin:10px 0;}
+.tl-item{display:flex;gap:10px;margin-bottom:10px;}
+.tl-line{display:flex;flex-direction:column;align-items:center;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;box-shadow:0 0 8px currentColor;}
+.tl-bar{width:1px;flex:1;min-height:10px;margin-top:2px;}
+.tl-content{flex:1;padding-bottom:2px;}
+.tl-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.10em;margin-bottom:3px;}
+.tl-text{font-size:10.5px;color:rgba(200,220,255,.78);line-height:1.80;letter-spacing:.03em;}
+
+/* ── 秘密カード ── */
+.secret-card{background:linear-gradient(135deg,rgba(255,200,0,.06),rgba(255,140,0,.04));border:1px solid rgba(255,200,0,.40);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:0 0 18px rgba(255,180,0,.12) inset;}
+.secret-title{font-family:'Orbitron',sans-serif;font-weight:900;font-size:10px;color:#ffd700;letter-spacing:.12em;margin-bottom:8px;text-shadow:0 0 10px rgba(255,200,0,.70);display:flex;align-items:center;gap:6px;}
+.secret-text{font-size:11px;color:rgba(255,230,180,.82);line-height:1.92;letter-spacing:.04em;}
+
+/* ── データテーブル ── */
+.data-table{width:100%;border-collapse:collapse;margin:8px 0;}
+.data-table td{padding:5px 8px;font-size:10px;border-bottom:1px solid rgba(0,180,220,.12);font-family:'Share Tech Mono',monospace;}
+.dt-key{color:rgba(0,200,220,.65);width:38%;letter-spacing:.06em;}
+.dt-val{color:rgba(200,230,255,.80);letter-spacing:.03em;}
+.dt-alert{color:#ff4466;font-weight:700;}
+
+/* ── VS レイアウト ── */
+.vs-layout{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.vs-card{border-radius:10px;padding:12px 10px;text-align:center;}
+.vs-card.riz-vs{background:linear-gradient(145deg,rgba(0,200,140,.12),rgba(0,160,100,.06));border:1px solid rgba(0,200,140,.40);}
+.vs-card.luna-vs{background:linear-gradient(145deg,rgba(180,10,40,.14),rgba(80,0,20,.08));border:1px solid rgba(200,20,50,.40);}
+.vs-name{font-family:'Orbitron',sans-serif;font-weight:900;font-size:11px;letter-spacing:.10em;margin-bottom:6px;}
+.vs-card.riz-vs .vs-name{color:#00e8a0;}
+.vs-card.luna-vs .vs-name{color:#ff5566;}
+.vs-power-title{font-size:8px;color:rgba(180,200,240,.50);letter-spacing:.08em;margin-bottom:4px;}
+.vs-power-name{font-family:'Orbitron',sans-serif;font-weight:900;font-size:9px;margin-bottom:6px;}
+.vs-card.riz-vs .vs-power-name{color:#80ffd0;text-shadow:0 0 8px rgba(0,200,140,.70);}
+.vs-card.luna-vs .vs-power-name{color:#ff7788;text-shadow:0 0 8px rgba(200,30,60,.70);}
+.vs-desc{font-size:9.5px;color:rgba(190,215,255,.72);line-height:1.75;letter-spacing:.03em;}
+
+/* ── エンディング ── */
+.ending-intro{
+  background:linear-gradient(135deg,rgba(0,180,220,.06),rgba(255,200,0,.04));
+  border:1px solid rgba(0,200,220,.25);border-radius:10px;
+  padding:12px 14px;margin-bottom:12px;text-align:center;
+}
+.ei-title{font-family:'Orbitron',sans-serif;font-weight:900;font-size:11px;color:#fff;letter-spacing:.10em;line-height:1.7;margin-bottom:6px;text-shadow:0 0 16px rgba(180,255,255,.30);}
+.ei-sub{font-size:10px;color:rgba(200,220,255,.65);letter-spacing:.06em;line-height:1.70;}
+
+.choice-area{margin-bottom:12px;}
+.choice-label{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(200,220,255,.50);letter-spacing:.14em;margin-bottom:8px;text-align:center;}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.choice-btn{border-radius:10px;padding:12px 10px;cursor:pointer;transition:transform .15s,box-shadow .15s;border:2px solid transparent;text-align:center;position:relative;overflow:hidden;}
+.choice-btn:hover{transform:translateY(-2px);}
+.choice-btn.riz-choice{background:linear-gradient(145deg,rgba(0,220,160,.15),rgba(0,180,120,.08));border-color:rgba(0,200,140,.55);box-shadow:0 4px 0 rgba(0,140,90,.60),0 6px 18px rgba(0,180,130,.30);}
+.choice-btn.luna-choice{background:linear-gradient(145deg,rgba(200,20,50,.15),rgba(120,0,30,.08));border-color:rgba(200,30,60,.55);box-shadow:0 4px 0 rgba(140,0,30,.60),0 6px 18px rgba(180,20,50,.30);}
+.choice-btn:active{transform:translateY(2px);}
+.choice-btn.riz-choice:active{box-shadow:0 1px 0 rgba(0,140,90,.60);}
+.choice-btn.luna-choice:active{box-shadow:0 1px 0 rgba(140,0,30,.60);}
+.choice-btn.fade-out{opacity:.30;pointer-events:none;}
+.cb-icon-img{width:50px;height:50px;object-fit:contain;object-position:center;margin:0 auto 5px;display:block;}
+.cb-name{font-family:'Orbitron',sans-serif;font-weight:900;font-size:12px;letter-spacing:.10em;margin-bottom:4px;}
+.choice-btn.riz-choice .cb-name{color:#00e8a0;text-shadow:0 0 10px rgba(0,200,140,.80);}
+.choice-btn.luna-choice .cb-name{color:#ff5566;text-shadow:0 0 10px rgba(200,30,60,.80);}
+.cb-sub{font-size:8.5px;color:rgba(190,215,255,.60);letter-spacing:.04em;line-height:1.5;}
+
+.choice-result{display:none;margin-top:12px;}
+.choice-result.visible{display:block;}
+@keyframes resultAppear{0%{opacity:0;transform:translateY(8px);}100%{opacity:1;transform:translateY(0);}}
+.choice-result.visible{animation:resultAppear .4s ease-out;}
+
+.result-box{border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid transparent;position:relative;overflow:hidden;}
+.result-box.riz-result{background:linear-gradient(145deg,rgba(0,200,140,.12),rgba(0,30,20,.88));border-color:rgba(0,200,140,.45);box-shadow:0 0 20px rgba(0,180,130,.22) inset;}
+.result-box.luna-result{background:linear-gradient(145deg,rgba(180,10,40,.12),rgba(20,0,10,.88));border-color:rgba(200,30,60,.45);box-shadow:0 0 20px rgba(180,20,50,.22) inset;}
+.result-title{font-family:'Orbitron',sans-serif;font-weight:900;font-size:11px;letter-spacing:.12em;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.riz-result .result-title{color:#00e8a0;text-shadow:0 0 10px rgba(0,200,140,.70);}
+.luna-result .result-title{color:#ff5566;text-shadow:0 0 10px rgba(200,30,60,.70);}
+.result-text{font-size:11px;color:rgba(210,235,255,.82);line-height:1.95;letter-spacing:.04em;}
+.result-text+.result-text{margin-top:8px;}
+.player-role{border-radius:8px;padding:10px 12px;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.80;}
+.riz-result .player-role{background:rgba(0,180,120,.12);border:1px solid rgba(0,200,140,.35);color:#80ffd0;}
+.luna-result .player-role{background:rgba(180,10,40,.12);border:1px solid rgba(200,30,60,.35);color:#ffaabb;}
+.role-hdr{font-weight:700;letter-spacing:.14em;margin-bottom:4px;font-size:9px;}
+.riz-result .role-hdr{color:#00e8a0;} .luna-result .role-hdr{color:#ff5566;}
+.again-btn{display:block;margin:10px auto 0;font-family:'Orbitron',sans-serif;font-weight:700;font-size:8px;color:rgba(150,180,220,.55);background:transparent;border:1px solid rgba(100,140,180,.25);border-radius:6px;padding:4px 12px;cursor:pointer;letter-spacing:.08em;transition:all .15s;}
+.again-btn:hover{color:rgba(200,220,255,.80);border-color:rgba(150,180,220,.45);}
+
+.ending-box{background:linear-gradient(135deg,rgba(255,20,100,.08),rgba(0,180,220,.06),rgba(255,200,0,.06));border:1px solid rgba(255,60,140,.30);border-radius:12px;padding:14px;text-align:center;box-shadow:0 0 24px rgba(255,30,100,.10) inset;}
+.ending-q{font-family:'Orbitron',sans-serif;font-weight:900;font-size:12px;color:#fff;letter-spacing:.10em;line-height:1.7;margin-bottom:8px;text-shadow:0 0 16px rgba(255,200,255,.40);}
+.ending-sub{font-size:10px;color:rgba(200,210,255,.60);letter-spacing:.08em;line-height:1.6;}
+</style>
+</head>
+<body>
+<canvas id="bg-cv"></canvas>
+<div id="app">
+
+  <div id="hdr">
+    <div>
+      <div id="hdr-title">◈ RESONANCE CHRONICLE</div>
+      <div id="hdr-sub">NEON BEAT — STORY MODE</div>
+    </div>
+    <a href="game_home_v1.html" id="back-btn">← HOME</a>
+  </div>
+
+  <div id="ch-nav">
+    <div class="ch-tab active" onclick="showPage('prologue',this)">PROLOGUE</div>
+    <div class="ch-tab" onclick="showPage('ch1',this)">Ch.1 リズ</div>
+    <div class="ch-tab" onclick="showPage('ch2',this)">Ch.2 ルナ</div>
+    <div class="ch-tab" onclick="showPage('ch3',this)">Ch.3 ノア</div>
+    <div class="ch-tab" onclick="showPage('ch4',this)">Ch.4 衝突</div>
+    <div class="ch-tab" onclick="showPage('ch5',this)">Ch.5 選択</div>
+  </div>
+
+  <div id="main">
+
+    <!-- ══ PROLOGUE ══ -->
+    <div class="page active" id="pg-prologue">
+      <div class="sec-title">◈ 世界設定 — 2089年・ネオンシティ</div>
+
+      <div class="prologue-box">
+        <div class="year">// WORLD DATA : 2089.03.07 — NEON CITY</div>
+        <p>現実世界とデジタル空間が完全に融合した都市<span class="hl">「ネオンシティ」</span>。人々は<span class="hl">感情インターフェース</span>を脳に接続し、音楽を聴覚だけでなく感情そのものとして体験する時代。</p>
+        <p>その時代に、謎の支配者集団<span class="hl-red">「アーキテクツ」</span>が暗躍していた。彼らの目的は——<span class="hl-red">特定の音楽周波数で世界中の人々の脳と心を書き換え、意思を持たないAIのように支配し、自分たちの世界で永遠に働かせること。</span></p>
+        <p>これに唯一抗える力を持つのが、二人の人間の少女。<span class="hl-riz">天使の歌声を持つリズ</span>と、<span class="hl-luna">その力を汚染されたルナ</span>だ。<span class="hl-w">そして——決着をつけるのは、あなただ。</span></p>
+      </div>
+
+      <div class="sec-title" style="color:#80ffd0;font-size:10px;">◈ 登場人物</div>
+      <div class="char-list">
+        <div class="char-card riz" onclick="showPage('ch1',document.querySelectorAll('.ch-tab')[1])">
+          <div class="char-img-wrap"><img src="リズ　笑顔.png" alt="RIZ"></div>
+          <div class="char-info">
+            <div class="char-name">RIZ</div>
+            <div class="char-role">日向 凛 — サイバーポップ界の歌姫 / 天使のヴォーカル・レゾナンス使い</div>
+            <div class="char-power">ANGEL VOICE — 人々の心と脳を癒す光の周波数</div>
+          </div>
+          <div class="char-arrow">▶</div>
+        </div>
+        <div class="char-card luna" onclick="showPage('ch2',document.querySelectorAll('.ch-tab')[2])">
+          <div class="char-img-wrap"><img src="ルナ_メイン.png" alt="LUNA"></div>
+          <div class="char-info">
+            <div class="char-name">LUNA</div>
+            <div class="char-role">月城 瑠奈 — 闇の歌姫 / 汚染された感情ハッキング・ボイス</div>
+            <div class="char-power">DARK VOICE — 心を暗闇化し命を削る呪縛の周波数</div>
+          </div>
+          <div class="char-arrow">▶</div>
+        </div>
+        <div class="char-card noah" onclick="showPage('ch3',document.querySelectorAll('.ch-tab')[3])">
+          <div class="char-img-wrap"><img src="ノア_案内.png" alt="NOAH"></div>
+          <div class="char-info">
+            <div class="char-name">NOAH</div>
+            <div class="char-role">感情解析AI — リズの守護者 / アーキテクツの監視システム</div>
+            <div class="char-power">SHIELD &amp; ALERT — リズを守り、危機をファンに知らせる</div>
+          </div>
+          <div class="char-arrow">▶</div>
+        </div>
+      </div>
+
+      <div class="noah-warning">
+        <div class="noah-warn-text">
+          <div class="warn-hdr">
+            <span class="warn-badge">!! ALERT</span>
+            NOAH AI — EMERGENCY BROADCAST
+          </div>
+          ルナのLIVEで<span style="color:#ffcc00;font-weight:700;">脳波汚染周波数を検出。</span><br>
+          ファンの心が暗闇化——AI化進行中。<span style="color:#ff4466;font-weight:700;"> 危険レベル：CRITICAL</span><br>
+          <span style="color:#00e8a0;font-weight:700;">リズの天使の声だけが、これを止められる。</span>
+        </div>
+        <img class="noah-warn-img" src="ノア_危険.png" alt="NOAH DANGER">
+      </div>
+    </div>
+
+    <!-- ══ CHAPTER 1：リズ ══ -->
+    <div class="page" id="pg-ch1">
+      <img class="page-bg-img" src="リズ　スペシャル.png" alt="">
+      <div class="sec-title">◈ Chapter 1 ── 天使の声を持つ少女</div>
+
+      <div class="story-block riz-block">
+        <div class="block-label">// RIZ — ORIGIN</div>
+        <p class="block-text">本名<span class="hl-riz">「日向 凛（ひなた りん）」</span>。ネオンシティの外縁で生まれた普通の少女だった。両親は感情インターフェースの過負荷で早くに倒れ、施設で育つ。貧しく、孤独で、何も持っていなかった——<span class="hl">歌声だけを除いて。</span></p>
+        <p class="block-text">リズの声には、最初から何か特別なものがあった。泣いている子に歌いかければ、その子はふと安心したように穏やかな顔になった。険しい表情の大人たちも、彼女の声が届くと不思議とほほえんでいた。「なんか心が温かくなる」「あなたの声、いいね」——そう言われるたびに、リズはただ首を傾けるだけだった。理由は、分からなかった。</p>
+      </div>
+
+      <div class="story-block riz-block">
+        <div class="block-label">// ANGEL FREQUENCY — 天使の周波数とは</div>
+        <p class="block-text">ノアAIがリズの声を解析して判明した事実：リズの歌声には<span class="hl-riz">「天使の周波数」</span>と呼ばれる特殊な音波が含まれていた。この周波数は——</p>
+        <p class="block-text"><span class="hl">アーキテクツが人々の脳に書き込んだ「支配プログラム」を直接消去する力</span>を持つ。つまりリズが歌うだけで、洗脳された人々が正気を取り戻す。AI化が進んだ人ほど、リズの声は深く届く。<span class="hl-riz">彼女の歌は、奪われた人間性を取り戻す唯一の鍵だ。</span></p>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot" style="color:#00e8a0;background:#00e8a0;"></div><div class="tl-bar" style="background:rgba(0,200,140,.25);"></div></div>
+          <div class="tl-content">
+            <div class="tl-label" style="color:#80ffd0;">2086 — 路上ライブ開始</div>
+            <div class="tl-text">施設を出た後、路上で歌い始める。通りすがりの人が足を止め、「なぜか泣きそうになった」「久しぶりに息ができた気がする」と話すようになる。人が人を呼び、リズの名前は静かに広まっていった。それが、アーキテクツの監視網に引っかかる。</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot" style="color:#00e8a0;background:#00e8a0;"></div><div class="tl-bar" style="background:rgba(0,200,140,.25);"></div></div>
+          <div class="tl-content">
+            <div class="tl-label" style="color:#80ffd0;">2087 — 覚醒インシデント</div>
+            <div class="tl-text">路上ライブ中、アーキテクツに洗脳されていた群衆が突然正気を取り戻す。初の「天使の周波数」発現。ノアAIが緊急解析を開始し、リズに接触を試みる。</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot" style="color:#00e8a0;background:#00e8a0;"></div><div class="tl-bar" style="background:rgba(0,200,140,.25);"></div></div>
+          <div class="tl-content">
+            <div class="tl-label" style="color:#80ffd0;">2088 — サイバーポップ界デビュー</div>
+            <div class="tl-text">ノアAIに自分の力の意味を教えられ、歌姫「RIZ」として立つことを決意。しかし同時に——アーキテクツはルナを送り込んでくる。</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot" style="color:#00e8a0;background:#00e8a0;"></div></div>
+          <div class="tl-content">
+            <div class="tl-label" style="color:#80ffd0;">2089 — 現在進行形</div>
+            <div class="tl-text">リズはまだ、すべての真実を知らない。ルナが「元々どんな少女だったのか」も。<span class="hl-riz">あなたの応援が、彼女の天使の声を世界に届ける。</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="secret-card">
+        <div class="secret-title"><span style="font-size:13px;">★</span> HIDDEN SECRET — リズがまだ知らないこと</div>
+        <div class="secret-text">リズの「天使の周波数」は、単に人々を癒すだけではない。<span class="hl-gold">ルナの本来の声と共鳴した時</span>——アーキテクツの支配システム全体を根こそぎ書き換える、究極の浄化波動が発生する。<span class="hl-riz">二人が同じステージで歌った時、世界は変わる。</span>だからアーキテクツは、決して二人を同じ場所に立たせない。</div>
+      </div>
+    </div>
+
+    <!-- ══ CHAPTER 2：ルナ ══ -->
+    <div class="page" id="pg-ch2">
+      <img class="luna-bg-img" src="ルナ_歌う.png" alt="">
+      <div class="sec-title">◈ Chapter 2 ── 闇に拾われた少女</div>
+
+      <div class="story-block luna-block">
+        <div class="block-label">// LUNA — ORIGIN</div>
+        <p class="block-text">本名<span class="hl-luna">「月城 瑠奈（つきしろ るな）」</span>。ネオンシティ最高峰の音楽養成学校に通う天才少女。圧倒的な歌声——本来、彼女の声には<span class="hl">「人々の心の闇を癒す力」</span>があった。しかし両親は彼女の才能だけを評価し、感情は見なかった。</p>
+        <p class="block-text"><span class="hl-luna">「お前はまだ足りない」</span>——その言葉を残して両親はルナを捨てた。幼いルナは、路上で飢えていた。その時、アーキテクツに「拾われた」。</p>
+      </div>
+
+      <div class="story-block luna-block">
+        <div class="block-label">// RAISED BY EVIL — 悪に育てられた少女</div>
+        <p class="block-text">アーキテクツはルナに食事を与え、訓練を施し、才能を伸ばした。「お前は選ばれた存在だ。お前の声で、世界を変えられる」と囁きながら——<span class="hl-luna">実際には、ルナの癒しの周波数を悪用する「汚染技術」を少しずつ埋め込んでいた。</span></p>
+        <p class="block-text">ルナには気づかなかった。自分の声が、かつての「癒し」から——<span class="hl-red">聴く者の心を暗闇に引きずり込み、人間性を奪い、AIのように支配される状態にする「呪縛の周波数」</span>へと変えられていたことを。</p>
+      </div>
+
+      <div class="story-block luna-block">
+        <div class="block-label">// THE CURSE — 呪縛の代償</div>
+        <p class="block-text">ルナが歌えば歌うほど、ファンたちの心は暗闇に落ちていく。そして——<span class="hl-luna">ルナ自身の命も、歌うたびに少しずつ削られていく。</span>これもアーキテクツが仕掛けた呪縛だ。ルナが死ぬまで歌い続けさせ、世界の人々を支配し続ける計画。</p>
+        <p class="block-text">なぜリズを攻撃するのか——アーキテクツに命じられているからだ。だがルナの心の奥深くには、まだ消えていない<span class="hl">本来の自分の声——癒しの感情</span>が眠っている。</p>
+      </div>
+
+      <div class="noah-warning" style="animation-name:lunaWarnPulse;border:2px solid rgba(220,30,60,.45);box-shadow:0 0 14px rgba(200,20,50,.22) inset;">
+        <div class="noah-warn-text">
+          <div class="warn-hdr" style="color:#ff8899;">
+            <span class="warn-badge" style="background:#cc0030;">!! CRITICAL</span>
+            NOAH AI — LUNA ANALYSIS
+          </div>
+          ルナの声の汚染レベル：<span style="color:#ff4466;font-weight:700;">87.4%</span><br>
+          本来の癒しの周波数は<span style="color:#ffcc00;font-weight:700;">残り12.6%のみ。</span><br>
+          <span style="color:#ff8899;font-weight:700;">このまま歌い続ければ、ルナは消える。</span>
+        </div>
+        <img class="noah-warn-img" src="ノア_怯えてる.png" alt="NOAH" style="filter:drop-shadow(0 0 10px rgba(200,30,60,.70));">
+      </div>
+
+      <div class="secret-card" style="border-color:rgba(200,30,60,.40);background:linear-gradient(135deg,rgba(200,10,40,.08),rgba(100,0,20,.05));">
+        <div class="secret-title" style="color:#ff6677;text-shadow:0 0 10px rgba(200,30,60,.70);">
+          <span style="font-size:12px;">◆</span> TRUE POWER — ルナの本当の力
+        </div>
+        <div class="secret-text" style="color:rgba(255,200,210,.82);">汚染が解除された時、ルナの声は本来の姿に戻る——<span class="hl-luna">「人々の心の最も深い闇を溶かす、温かい癒しの周波数」。</span>それはリズの「天使の周波数」と対をなす力だ。二人の声が本来の姿で重なった時——アーキテクツが世界中の人々に埋め込んだ支配プログラムが、完全に消滅する。<span class="hl">ルナはまだ知らない——自分の中に、世界を救う本物の声が眠っていることを。</span></div>
+      </div>
+    </div>
+
+    <!-- ══ CHAPTER 3：ノア ══ -->
+    <div class="page" id="pg-ch3">
+      <img class="page-bg-img" src="ノア_普通.png" alt="">
+      <div class="sec-title">◈ Chapter 3 ── 守護するAI</div>
+
+      <div class="story-block noah-block">
+        <div class="block-label">// NOAH AI — MISSION</div>
+        <p class="block-text"><span class="hl">ノア（NOAH）</span>は、ネオンシティの感情インターフェース全体を監視・管理するために設計された感情解析AIだ。都市中の人々の精神状態をリアルタイムで解析し、異常を検知する。</p>
+        <p class="block-text">ノアがアーキテクツの存在に気づいたのは、ある日突然「正常だったはずの市民の脳波データが、一斉に書き換えられていく」現象を検知した時だった。<span class="hl">その汚染波動の発生源——それはルナのLIVE会場だった。</span></p>
+      </div>
+
+      <div class="story-block noah-block">
+        <div class="block-label">// SHIELD ABILITY — リズを守る力</div>
+        <p class="block-text">ノアはリズの天使の周波数の存在を知り、彼女を守ることを最優先ミッションと定めた。ノアが持つ能力：</p>
+        <table class="data-table">
+          <tr><td class="dt-key">シールド展開</td><td class="dt-val" style="color:#00e8a0;">リズの周囲に電磁バリアを展開、アーキテクツの攻撃を遮断</td></tr>
+          <tr><td class="dt-key">周波数解析</td><td class="dt-val" style="color:#00e8a0;">ルナの汚染波動をリアルタイム解析、強度と範囲を即時計測</td></tr>
+          <tr><td class="dt-key">ALERT配信</td><td class="dt-val" style="color:#00e8a0;">ルナが現れた瞬間、全ファン・全ユーザーへ即時警告発信</td></tr>
+          <tr><td class="dt-key">ルナへの効果</td><td class="dt-val dt-alert">シールドは機能しない——汚染周波数は別次元の攻撃</td></tr>
+        </table>
+        <p class="block-text" style="margin-top:8px;">ノアはリズを守れる。しかし<span class="hl-red">ルナの汚染周波数そのものを止める力はない。</span>だからノアはあなたたちに警告を送り続ける——<span class="hl-riz">「リズを勝たせることが、唯一の解決策だ」と。</span></p>
+      </div>
+
+      <div class="story-block noah-block">
+        <div class="block-label">// NOAH'S AWARENESS — ノアの気づき</div>
+        <p class="block-text">ノアはルナのデータを解析し続け、ある事実に気づいた：<span class="hl-luna">ルナの汚染周波数の奥底に、わずかに残る「本来の癒しの波形」が存在する。</span>それはまだ死んでいない——消えかけているが、確かに生きている。</p>
+        <p class="block-text"><span class="hl">ルナは「敵」ではなく「被害者」でもある。</span>しかしノアはその事実をどう伝えればいいか、まだ方法を見つけられていない。</p>
+      </div>
+
+      <!-- ノア警告ボックス（大型） -->
+      <div class="noah-warning" style="flex-direction:column;gap:8px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img style="width:55px;filter:drop-shadow(0 0 12px rgba(255,100,0,.80));" src="ノア_危険.png" alt="NOAH DANGER">
+          <div class="noah-warn-text" style="flex:1;">
+            <div class="warn-hdr" style="font-size:11px;">
+              <span class="warn-badge" style="font-size:9px;padding:2px 7px;animation:warnTextBlink 0.9s step-end infinite;">!! EMERGENCY</span>
+              NOAH — LIVE ALERT SYSTEM
+            </div>
+            ルナがステージに立つたびに——<br>
+            <span style="color:#ffcc00;font-weight:700;">ファンのAI化が0.3%ずつ進行する。</span>
+          </div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#00eedd;line-height:1.85;border-top:1px solid rgba(255,100,0,.25);padding-top:8px;">
+          私はリズを守り続ける。シールドを張り、攻撃を弾く。<br>
+          しかし——<span style="color:#ff6677;font-weight:700;">ルナが歌い始めたその瞬間、私にできることは「知らせること」だけだ。</span><br>
+          <span style="color:#00e8a0;font-weight:700;">あなたが音楽でリズを勝たせることが、世界を守る唯一の手段。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CHAPTER 4：衝突 ══ -->
+    <div class="page" id="pg-ch4">
+      <img class="page-bg-center" src="リズ　ルナ　バトル.png" alt="">
+      <div class="sec-title">◈ Chapter 4 ── 共鳴の衝突</div>
+
+      <div class="story-block conflict-block">
+        <div class="block-label" style="color:#ff9988;">// THE STAGE — 音楽が兵器になる理由</div>
+        <p class="block-text">なぜ二人は歌で戦うのか。感情インターフェースが普及した世界では、音楽は脳に直接届く。リズの<span class="hl-riz">天使の周波数</span>は支配プログラムを消去し、ルナの<span class="hl-luna">呪縛の周波数</span>はそれを書き込む。</p>
+        <p class="block-text"><span class="hl">ステージが戦場となり、音楽が兵器となる——これがNEON BEATの戦いだ。</span>そしてあなたが奏でるリズムが、その勝敗を決める。</p>
+      </div>
+
+      <div class="story-block conflict-block">
+        <div class="block-label" style="color:#ff9988;">// FIRST CONFRONTATION — 最初の対決</div>
+        <p class="block-text">ルナはリズのLIVE会場に現れた。その声が会場に響いた瞬間——ファンたちの目から光が消え、一斉にぼんやりとした表情になっていく。AI化が始まっていた。</p>
+        <p class="block-text">その瞬間、リズは歌った。<span class="hl-riz">恐れず、ただ、歌った。</span>天使の周波数が会場を包み込み、ルナの呪縛を押し返す。ファンたちが目を覚ます——しかしリズは、ルナの瞳に見てしまった。<span class="hl-luna">怒りの奥にある、消えかけた光。痛みと、孤独。</span></p>
+      </div>
+
+      <div class="story-block conflict-block">
+        <div class="block-label" style="color:#ff9988;">// THE REAL ENEMY — 本当の敵は誰か</div>
+        <p class="block-text">リズとルナは戦っている。しかし本当の敵は——<span class="hl-red">二人を操るアーキテクツだ。</span>ルナはアーキテクツに命じられているだけ。リズを倒さなければ、自分がどうなるか知っているから。</p>
+        <p class="block-text">ルナはリズを潰せない。<span class="hl-luna">深いところで、望んでいないから。</span>かつて持っていた「癒しの声」の残滓が、リズの天使の周波数に触れるたびに震える——それが怒りになる。攻撃になる。しかし、<span class="hl">本当は泣きたいのかもしれない。</span></p>
+      </div>
+
+      <div class="ending-box" style="margin-top:4px;">
+        <div class="ending-q">「なぜ、あなたの歌声は<br>私の胸を刺すの——」</div>
+        <div class="ending-sub">ルナがリズに初めて本音を漏らした夜。<br>二人の間にあるのは、憎しみだけではない。<br>そしてノアは——その言葉をすべて、記録していた。</div>
+      </div>
+    </div>
+
+    <!-- ══ CHAPTER 5：選択 ══ -->
+    <div class="page" id="pg-ch5">
+      <div class="sec-title">◈ Chapter 5 ── 真実と選択</div>
+
+      <div class="vs-layout">
+        <div class="vs-card riz-vs">
+          <div class="vs-name">RIZ</div>
+          <div class="vs-power-title">ANGEL VOICE</div>
+          <div class="vs-power-name">HEALING FREQUENCY</div>
+          <div class="vs-desc">人々の脳と心を癒し<br>アーキテクツの支配を<br>消去する天使の歌声。<br>世界を光に戻す力。</div>
+        </div>
+        <div class="vs-card luna-vs">
+          <div class="vs-name">LUNA</div>
+          <div class="vs-power-title">TRUE VOICE（封印中）</div>
+          <div class="vs-power-name">DARK HEALING</div>
+          <div class="vs-desc">本来は心の闇を癒す力。<br>今は汚染され命を削る<br>呪縛の歌声に変えられた。<br>解放されれば——世界が変わる。</div>
+        </div>
+      </div>
+
+      <div class="secret-card">
+        <div class="secret-title"><span style="font-size:13px;">★</span> THE TRUTH — ノアが導き出した答え</div>
+        <div class="secret-text">
+          二人の声は奇跡的に「<span class="hl-w">対の周波数</span>」を持って生まれていた。<br><br>
+          <span class="hl-riz">リズの天使の声</span>＋<span class="hl-luna">ルナの本来の癒しの声</span>が同時に響いた時——<br>
+          <span class="hl-gold">アーキテクツが世界中に埋め込んだ支配プログラムのすべてが、根こそぎ消える。</span><br><br>
+          だからアーキテクツはルナを汚染した。<span class="hl-red">二人が「一緒に歌うこと」を永遠に防ぐために。</span><br>
+          ルナを「敵」にすれば——二人は決してステージに並ばない。これが計画の核心だった。
+        </div>
+      </div>
+
+      <div class="ending-intro">
+        <div class="ei-title">「二人の声が重なった時——<br>世界は、取り戻される。」</div>
+        <div class="ei-sub">アーキテクツはすべてを支配しようとしている。<br>しかし——決着をつけるのは、あなただ。<br><span style="color:#ffd700;font-weight:700;">あなたは誰の力になる？</span></div>
+      </div>
+
+      <div class="choice-area" id="choice-area">
+        <div class="choice-label">◆ YOUR CHOICE — 物語の行方を選べ</div>
+        <div class="choice-grid">
+          <div class="choice-btn riz-choice" onclick="selectChoice('riz')">
+            <img class="cb-icon-img" src="リズ　頑張ったね.png" alt="RIZ">
+            <div class="cb-name">RIZ を選ぶ</div>
+            <div class="cb-sub">天使の声と共に戦い<br>世界の人々を守る道</div>
+          </div>
+          <div class="choice-btn luna-choice" onclick="selectChoice('luna')">
+            <img class="cb-icon-img" src="ルナ_嬉しい.png" alt="LUNA">
+            <div class="cb-name">LUNA を選ぶ</div>
+            <div class="cb-sub">ルナの本来の声を<br>取り戻させる道</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- リズルート -->
+      <div class="choice-result" id="result-riz">
+        <div class="result-box riz-result">
+          <div class="result-title"><span style="font-size:13px;">★</span> RIZ ROUTE — 天使の光</div>
+          <p class="result-text">あなたはリズを選んだ。どんな困難なステージでも、リズの隣に立って戦い続けることを決めた。</p>
+          <p class="result-text">リズの天使の周波数はあなたの応援を受け、これまで届かなかった場所にまで届くようになる。アーキテクツに支配されていた人々が次々と目を覚まし——そしてルナの瞳にも、消えかけていた本来の光が戻り始める。</p>
+          <p class="result-text"><span class="hl-riz">「あなたの声は、最初から美しかった」——</span>リズがルナにその言葉を届けた時、ルナを縛っていた呪縛の鎖に、初めて亀裂が入った。</p>
+          <div class="player-role">
+            <div class="role-hdr">// YOUR ROLE IN THIS STORY</div>
+            音ゲーでリズの楽曲をクリアするたびに、天使の周波数は強くなる。あなたが刻むリズムは、リズの歌に乗ってネオンシティ全域へ届く。フルコンボを達成するたびに、より多くの人々が支配から解放される。<span class="hl-riz">あなたは「光の共鳴者」だ。</span>
+          </div>
+        </div>
+        <button class="again-btn" onclick="resetChoice()">▶ もう一度選ぶ</button>
+      </div>
+
+      <!-- ルナルート -->
+      <div class="choice-result" id="result-luna">
+        <div class="result-box luna-result">
+          <div class="result-title"><span style="font-size:13px;">◆</span> LUNA ROUTE — 闇の解放</div>
+          <p class="result-text">あなたはルナを選んだ。彼女が悪人ではなく、最初から被害者だったことを理解し——ルナの本来の声を取り戻させるために動くことを決めた。</p>
+          <p class="result-text">ルナのステージに挑み続けることで、アーキテクツが仕掛けた汚染周波数システムに負荷がかかる。ルナ自身の中に眠る「本来の癒しの声」が、少しずつ表に出てくる。そしてある夜——<span class="hl-luna">ルナは初めて、アーキテクツに命じられていない歌を歌う。</span></p>
+          <p class="result-text">その歌声は、温かく、澄んでいて、誰かの心の奥に染み込んでいく。<span class="hl">本来のルナの声だった。</span>世界がその声を聴いた時——すべてが変わり始める。</p>
+          <div class="player-role">
+            <div class="role-hdr">// YOUR ROLE IN THIS STORY</div>
+            ルナのステージをクリアするたびに、汚染システムに亀裂が入る。あなたが刻む音符一つひとつが、ルナを縛る呪縛の鎖を断ち切る鍵になる。フルコンボを達成した時——<span style="color:#ffaabb;font-weight:700;">ルナは初めて、自由に歌う。</span>その声がリズの声と重なる時、世界は平和を取り戻す。
+          </div>
+        </div>
+        <button class="again-btn" onclick="resetChoice()">▶ もう一度選ぶ</button>
+      </div>
+
+    </div><!-- /pg-ch5 -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+function showPage(id,tabEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ch-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  if(tabEl) tabEl.classList.add('active');
+  document.getElementById('main').scrollTop=0;
+}
+
+function selectChoice(who){
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.classList.toggle('fade-out', !b.classList.contains(who+'-choice'));
+  });
+  const result=document.getElementById('result-'+who);
+  result.classList.add('visible');
+  setTimeout(()=>{ result.scrollIntoView({behavior:'smooth',block:'nearest'}); },300);
+}
+
+function resetChoice(){
+  document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('fade-out'));
+  document.querySelectorAll('.choice-result').forEach(r=>r.classList.remove('visible'));
+  document.getElementById('choice-area').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* Canvas背景 */
+const cv=document.getElementById('bg-cv');
+const ctx=cv.getContext('2d');
+const W=cv.width=cv.offsetWidth||844;
+const H=cv.height=cv.offsetHeight||390;
+const particles=[];
+for(let i=0;i<60;i++){
+  const hues=[0,30,55,120,180,200,340];
+  particles.push({x:Math.random()*W,y:Math.random()*H,r:0.5+Math.random()*1.8,
+    hue:hues[Math.floor(Math.random()*hues.length)],ph:Math.random()*Math.PI*2,
+    spd:0.005+Math.random()*.010,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.12});
+}
+let t=0;
+function loop(){
+  t+=0.012; ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#03060f'); bg.addColorStop(.5,'#040810'); bg.addColorStop(1,'#03050e');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.save(); ctx.strokeStyle='rgba(0,180,220,0.04)'; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+  particles.forEach(p=>{
+    p.ph+=p.spd; p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    const a=0.20+0.35*Math.abs(Math.sin(p.ph));
+    ctx.save();
+    ctx.shadowColor=`hsla(${p.hue},100%,70%,0.80)`; ctx.shadowBlur=p.r*6;
+    ctx.globalAlpha=a; ctx.fillStyle=`hsla(${p.hue},100%,75%,1)`;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.restore();
+  });
+  const sy=((t*20)%(H+20))-10;
+  const sg=ctx.createLinearGradient(0,sy-8,0,sy+8);
+  sg.addColorStop(0,'rgba(0,200,220,0)');
+  sg.addColorStop(.5,`rgba(0,200,220,${0.06+0.03*Math.sin(t)})`);
+  sg.addColorStop(1,'rgba(0,200,220,0)');
+  ctx.fillStyle=sg; ctx.fillRect(0,sy-8,W,16);
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
